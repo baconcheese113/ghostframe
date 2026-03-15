@@ -1,0 +1,48 @@
+[project]
+name = "ghostframe-workspace"
+version = "0.1.0"
+description = "GhostFrame workspace root — shared tool config only, no runtime code"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ghostframe",
+    "ghostframe-api",
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "ruff>=0.11",
+    "mypy>=1.15",
+    "pre-commit>=4.0",
+]
+
+[tool.uv.sources]
+ghostframe = { workspace = true }
+ghostframe-api = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "packages/ghostframe",
+    "packages/ghostframe-api",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["packages/ghostframe/src", "packages/ghostframe-api/src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib", "-ra", "--strict-markers"]
+markers = [
+    "golden: hand-computed ORF output tests for professor grading",
+    "integration: tests requiring multiple modules or external services",
+    "slow: tests that take significant time (MHC prediction, evidence fetch)",
+]

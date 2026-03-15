@@ -1,0 +1,16 @@
+>edge_no_atg Sequence with no ATG start codon
+TTTCCCGGGTTTAAACCCTGA
+>edge_atg_stop ATG immediately followed by stop codon (6 bases)
+ATGTAA
+>edge_no_stop ATG with no in-frame stop codon
+ATGAAAGGATTTCCCGGG
+>edge_overlapping_atg Two ATGs before one stop (maximal ORF uses first ATG)
+ATGAAGATGCCCGGATGA
+>edge_multiline Sequence split across lines with whitespace
+ATG AAA GGA
+TTT CCC GGG
+TTT AAA CCC TGA
+>edge_mixed_case Lowercase sequence that should be normalized
+atgaaaggatttcccgggtttaaaccctga
+>edge_boundary ORF starting at first nucleotide
+ATGAAATGA

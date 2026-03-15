@@ -1,0 +1,6 @@
+>seq1 First sequence with ORF in frame 1
+ATGAAAGGATTTCCCGGGTTTAAACCCTGA
+>seq2 Second sequence with no ORFs above min length
+ATGTAATTTGGG
+>seq3 Third sequence with a longer ORF
+GGGGATGAAATTTCCCGGGAAATTTCCCGGGAAATTTCCCGGGAAATTTCCCGGGTTTAAACCCTGAAAA

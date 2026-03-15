@@ -1,0 +1,7 @@
+>seq1 First sequence with ORF in frame 1 | FRAME = 1 POS = 1 LEN = 30
+ATG AAA GGA TTT CCC GGG TTT AAA CCC TGA
+>seq2 Second sequence with no ORFs above min length | FRAME = 1 POS = 1 LEN = 6
+ATG TAA
+>seq3 Third sequence with a longer ORF | FRAME = 2 POS = 5 LEN = 63
+ATG AAA TTT CCC GGG AAA TTT CCC GGG AAA TTT CCC GGG AAA TTT
+CCC GGG TTT AAA CCC TGA

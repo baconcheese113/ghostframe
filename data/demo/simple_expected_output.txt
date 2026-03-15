@@ -1,0 +1,2 @@
+>simple_test A simple test sequence with one known ORF in frame 1 | FRAME = 1 POS = 1 LEN = 30
+ATG AAA GGA TTT CCC GGG TTT AAA CCC TGA

@@ -1,0 +1,1 @@
+"""GhostFrame FastAPI web backend."""

@@ -1,0 +1,4 @@
+Hugo_Symbol	Chromosome	Start_Position	End_Position	Reference_Allele	Tumor_Seq_Allele2	Variant_Classification
+TP53	17	7577121	7577121	C	T	Silent
+BRCA1	17	41245466	41245466	G	A	Missense_Mutation
+KRAS	12	25398284	25398284	C	A	Silent
