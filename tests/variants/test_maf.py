@@ -15,7 +15,7 @@ class TestMafParse:
 
     def test_field_mapping(self, sample_maf_path: Path) -> None:
         variants = parse(sample_maf_path)
-        tp53 = variants[0]
+        tp53 = next(v for v in variants if v.gene == "TP53")
         assert tp53.gene == "TP53"
         assert tp53.chrom == "17"
         assert tp53.pos == 7577121

@@ -23,7 +23,7 @@ def parse(path: Path) -> list[Variant]:
         List of Variant records with chrom, pos, ref, alt, classification, gene.
     """
     variants: list[Variant] = []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         lines = (line for line in f if not line.startswith("#"))
         for row in csv.DictReader(lines, delimiter="\t"):
             variants.append(
