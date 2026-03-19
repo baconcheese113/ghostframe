@@ -37,8 +37,12 @@ class TestLocalFetch:
 class TestWindowExtract:
     def _make_variant(self, chrom: str = "chr1", pos: int = 10) -> NormalizedVariant:
         return NormalizedVariant(
-            chrom=chrom, pos=pos, ref="A", alt="T",
-            classification="Silent", gene="TP53",
+            chrom=chrom,
+            pos=pos,
+            ref="A",
+            alt="T",
+            classification="Silent",
+            gene="TP53",
         )
 
     def test_window_chrom_and_bounds(self) -> None:
@@ -46,8 +50,8 @@ class TestWindowExtract:
         v = self._make_variant(pos=501)
         gw = window.extract(v, seq, flank=10)
         assert gw.chrom == "chr1"
-        assert gw.start == 490   # 0-based: pos-1-flank = 500-10
-        assert gw.end == 511     # pos-1+len(ref)+flank = 500+1+10
+        assert gw.start == 490  # 0-based: pos-1-flank = 500-10
+        assert gw.end == 511  # pos-1+len(ref)+flank = 500+1+10
         assert len(gw.sequence) == 21
 
     def test_window_clamps_at_zero(self) -> None:
@@ -78,11 +82,13 @@ class TestWindowExtract:
 class TestRemoteFetch:
     def test_returns_dna_string(self) -> None:
         from ghostframe.seqfetch import remote
+
         seq = remote.fetch("1", 1000000, 1000010)
         assert set(seq).issubset(set("ATGCN"))
         assert len(seq) == 11
 
     def test_returns_uppercase(self) -> None:
         from ghostframe.seqfetch import remote
+
         seq = remote.fetch("1", 1000000, 1000005)
         assert seq == seq.upper()
