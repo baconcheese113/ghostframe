@@ -92,7 +92,8 @@ def reverse_complement(seq: str) -> str:
         - The _COMPLEMENT translation table and str.translate() may be useful.
         - Don't forget to reverse the string after complementing.
     """
-    raise NotImplementedError("reverse_complement not yet implemented")
+    seq = seq.upper()
+    return seq.translate(_COMPLEMENT)[::-1]
 
 
 def translate(dna: str) -> str:

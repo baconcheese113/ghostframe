@@ -10,7 +10,7 @@ min_length bases are excluded.
 """
 
 from ghostframe.models import ORF
-from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement  # noqa: F401
+from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement
 
 
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
@@ -31,7 +31,32 @@ def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
         - Delegate each frame to find_orfs_in_frame().
         - Results must be ordered by frame number (1-6), then by position.
     """
-    raise NotImplementedError("find_orfs not yet implemented")
+    sequence = sequence.upper()
+    original_seq_len = len(sequence)
+    results: list[ORF] = []
+
+    for frame in range(1, 4):
+        results.extend(
+            find_orfs_in_frame(
+                sequence=sequence,
+                frame=frame,
+                min_length=min_length,
+                original_seq_len=original_seq_len,
+            )
+        )
+
+    rev_seq = reverse_complement(sequence)
+    for frame in range(4, 7):
+        results.extend(
+            find_orfs_in_frame(
+                sequence=rev_seq,
+                frame=frame,
+                min_length=min_length,
+                original_seq_len=original_seq_len,
+            )
+        )
+
+    return sorted(results, key=lambda orf: (orf.frame, orf.pos))
 
 
 def find_orfs_in_frame(
@@ -68,7 +93,55 @@ def find_orfs_in_frame(
         - Use _compute_position() for the reported position.
         - Only include ORFs with length >= min_length.
     """
-    raise NotImplementedError("find_orfs_in_frame not yet implemented")
+    sequence = sequence.upper()
+    if original_seq_len is None:
+        original_seq_len = len(sequence)
+
+    offset = (frame - 1) % 3
+    is_reverse = frame >= 4
+    orfs: list[ORF] = []
+
+    i = offset
+    while i <= len(sequence) - 3:
+        codon = sequence[i : i + 3]
+
+        if codon != "ATG":
+            i += 3
+            continue
+
+        stop_idx = None
+        j = i + 3
+        while j <= len(sequence) - 3:
+            next_codon = sequence[j : j + 3]
+            if next_codon in STOP_CODONS:
+                stop_idx = j
+                break
+            j += 3
+
+        if stop_idx is None:
+            break
+
+        orf_dna = sequence[i : stop_idx + 3]
+        orf_length = len(orf_dna)
+
+        if orf_length >= min_length:
+            position = _compute_position(
+                orf_start_idx=i,
+                is_reverse=is_reverse,
+                original_seq_len=original_seq_len,
+            )
+            orfs.append(
+                ORF(
+                    frame=frame,
+                    pos=position,
+                    length=orf_length,
+                    dna=orf_dna,
+                )
+            )
+
+        i = stop_idx + 3
+
+    return orfs
 
 
 def _compute_position(
@@ -82,4 +155,7 @@ def _compute_position(
     Reverse frames: POS = -(orf_start_idx + 1), representing position from
     the right end of the original sequence (rightmost base is -1).
     """
-    raise NotImplementedError("_compute_position not yet implemented")
+    if not is_reverse:
+        return orf_start_idx + 1
+
+    return -(orf_start_idx + 1)
