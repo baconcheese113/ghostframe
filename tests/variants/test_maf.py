@@ -77,3 +77,11 @@ class TestNormalize:
         nv = normalize(v)
         assert nv.ref == "A"
         assert nv.alt == "G"
+
+    def test_chrom_prefix_stripped(self) -> None:
+        v = Variant(chrom="chr17", pos=100, ref="A", alt="G", classification="Silent", gene="TP53")
+        assert normalize(v).chrom == "17"
+
+    def test_chrom_no_prefix_unchanged(self) -> None:
+        v = Variant(chrom="17", pos=100, ref="A", alt="G", classification="Silent", gene="TP53")
+        assert normalize(v).chrom == "17"
