@@ -13,6 +13,18 @@ See CLAUDE.md for full project conventions. This file provides the same guidance
 - **Format**: `uv run ruff check --select I --fix && uv run ruff format`
 - **Type check**: `uv run mypy packages/ghostframe/src/ghostframe/orfs/`
 
+## Third-party libraries
+
+Always search for well-maintained open source libraries before writing new logic. Prefer a library if it meaningfully reduces complexity — don't reinvent wheels. Key deps in use:
+
+- `click` — CLI framework (`cli/`)
+- `pyfaidx` — indexed FASTA access (`seqfetch/local.py`)
+- `httpx` — async HTTP to Ensembl/UCSC REST (`seqfetch/remote.py`)
+- `pandas` — tabular data manipulation (`reports/`, `variants/`)
+- `fastapi` + `pydantic` — API boundary only (`ghostframe-api`)
+
+When planning or implementing any module, ask: *is there a standard library or well-known package that already does this?*
+
 ## Important
 
 - Use `uv run --package ghostframe` or `uv run --package ghostframe-api` for CLI/API commands

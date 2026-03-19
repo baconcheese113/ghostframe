@@ -38,6 +38,20 @@ uv run --package ghostframe orfs data/demo/hpv16_k02718.fasta --min-len 50
 uv run --package ghostframe-api uvicorn ghostframe_api.app:app --reload
 ```
 
+## Third-party libraries
+
+Always search for well-maintained open source libraries before writing new logic. Prefer a library if it meaningfully reduces complexity — don't reinvent wheels. Key deps in use:
+
+| Library | Used in | Purpose |
+|---|---|---|
+| `click` | `cli/` | CLI framework |
+| `pyfaidx` | `seqfetch/local.py` | Indexed FASTA access |
+| `httpx` | `seqfetch/remote.py` | Async HTTP to Ensembl/UCSC REST |
+| `pandas` | `reports/`, `variants/` | Tabular data manipulation |
+| `fastapi` + `pydantic` | `ghostframe-api` | API boundary only |
+
+When planning or implementing any module, ask: *is there a standard library or well-known package that already does this?*
+
 ## Conventions
 
 - **Python >= 3.13** — use native `X | Y` union syntax, no `from __future__ import annotations`
