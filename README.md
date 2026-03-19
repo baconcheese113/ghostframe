@@ -16,6 +16,12 @@ uv sync
 # Run the ORF finder on the HPV16 demo
 uv run --package ghostframe orfs data/demo/hpv16_k02718.fasta --min-len 50
 
+# Fetch a sequence region from a local FASTA (seqfetch)
+uv run --package ghostframe python -c "
+from ghostframe.seqfetch import local
+print(local.fetch('K02718.1', 0, 100, 'data/demo/hpv16_k02718.fasta'))
+"
+
 # Run tests
 uv run pytest
 
@@ -32,7 +38,7 @@ ghostframe/
       src/ghostframe/
         orfs/             # 6-frame ORF scanner (implemented)
         variants/         # MAF/VCF intake (stubbed)
-        seqfetch/         # Reference sequence retrieval (stubbed)
+        seqfetch/         # Reference sequence retrieval (implemented)
         reclassify/       # Multi-frame reclassification (stubbed)
         peptides/         # Kmer generation (stubbed)
         mhc/              # MHC binding prediction (stubbed)
