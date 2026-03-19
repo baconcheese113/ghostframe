@@ -18,4 +18,4 @@ def keep_silent(variants: list[Variant]) -> list[Variant]:
     Returns:
         Filtered list containing only Silent variants.
     """
-    raise NotImplementedError("Variant filtering not yet implemented")
+    return [v for v in variants if v.classification == "Silent"]
