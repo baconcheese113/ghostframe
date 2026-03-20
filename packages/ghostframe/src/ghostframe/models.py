@@ -73,6 +73,8 @@ class FrameEffect:
     new_class: str  # reclassified (e.g. "Missense")
     ref_aa: str
     alt_aa: str
+    evidence_tier: int = 1  # 1=scan-only, 2=OpenProt-confirmed, 3=SynMICdb-scored
+    synmicdb_score: float | None = None
 
 
 @dataclass
