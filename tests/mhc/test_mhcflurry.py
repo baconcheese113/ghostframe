@@ -2,7 +2,7 @@
 
 import pytest
 
-from ghostframe.mhc.mhcflurry import MHCflurryPredictor, _DEFAULT_ALLELES
+from ghostframe.mhc.mhcflurry import _DEFAULT_ALLELES, MHCflurryPredictor
 from ghostframe.models import BindingPrediction, Peptide
 
 # GILGFVFTL — well-characterized HLA-A*02:01 strong binder (influenza M1 58-66)

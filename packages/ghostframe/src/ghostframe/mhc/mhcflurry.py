@@ -5,32 +5,25 @@ Wraps the MHCflurry open-source MHC-I binding predictor.
 Pipeline position: peptides → [mhc.mhcflurry] → reports
 """
 
-import importlib.resources
-import shlex
-import sys
-import types
-
-# mhcflurry 2.1.5 compatibility shims for Python 3.13 / modern uv environments:
-# 1. `pipes` module was removed in Python 3.13
-if "pipes" not in sys.modules:
-    _pipes_shim = types.ModuleType("pipes")
-    _pipes_shim.quote = shlex.quote  # type: ignore[attr-defined]
-    sys.modules["pipes"] = _pipes_shim
-
-# 2. `pkg_resources` is no longer a top-level module in setuptools 71+
-if "pkg_resources" not in sys.modules:
-    def _resource_string(package_or_requirement: str, resource_name: str) -> bytes:
-        pkg = importlib.resources.files(package_or_requirement)
-        return pkg.joinpath(resource_name).read_bytes()
-
-    _pkg_shim = types.ModuleType("pkg_resources")
-    _pkg_shim.resource_string = _resource_string  # type: ignore[attr-defined]
-    sys.modules["pkg_resources"] = _pkg_shim
-
-from mhcflurry import Class1PresentationPredictor  # type: ignore[import]
+import numpy as np
+import torch
+from mhcflurry import Class1PresentationPredictor  # type: ignore[import-untyped]
 
 from ghostframe.mhc.base import MHCPredictor
 from ghostframe.models import BindingPrediction, Peptide
+
+# mhcflurry 2.2.0rc1 passes read-only NumPy arrays to torch.from_numpy(),
+# which requires writable arrays (known RC bug). Patch at import time.
+_orig_from_numpy = torch.from_numpy  # type: ignore[assignment]
+
+
+def _from_numpy_writable(array: np.ndarray) -> torch.Tensor:  # type: ignore[type-arg]
+    if not array.flags.writeable:
+        array = array.copy()
+    return _orig_from_numpy(array)  # type: ignore[return-value]
+
+
+torch.from_numpy = _from_numpy_writable  # type: ignore[assignment]
 
 _DEFAULT_ALLELES = ["HLA-A*02:01"]
 
@@ -67,7 +60,7 @@ class MHCflurryPredictor(MHCPredictor):
         predictor = self._load()
         sequences = [p.sequence for p in peptides]
 
-        df = predictor.predict(alleles=alleles, peptides=sequences)
+        df = predictor.predict(alleles=alleles, peptides=sequences)  # type: ignore[union-attr]
 
         # Class1PresentationPredictor returns one row per peptide with the
         # best-binding allele from the supplied list (best_allele column).
