@@ -2,6 +2,14 @@
 
 A multi-frame variant impact scanner for cancer bioinformatics. GhostFrame re-examines "Silent" somatic mutations across all 6 reading frames to identify hidden non-synonymous effects in overlapping open reading frames (ORFs).
 
+## What it does
+
+A "Silent" mutation in standard cancer annotations means the canonical protein sequence is unchanged. But in regions where multiple ORFs overlap, the same nucleotide change may be missense or stop-gained in an alternative reading frame. GhostFrame scans all 6 frames, finds these hidden effects, and prioritizes the resulting mutant peptides as noncanonical neoantigen candidates.
+
+**Output:** Interactive dashboard with Sankey reclassification flow, variant table, 3D frame explorer, and MHC binding scores. Also exports JSON/TSV for downstream use.
+
+> **Research/educational use only. Not for clinical decision-making.**
+
 ## Quickstart
 
 ```bash
