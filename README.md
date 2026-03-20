@@ -34,6 +34,9 @@ effects = engine.reclassify(variant, orfs, window)
 print(summary.aggregate(effects))
 "
 
+# Run the fast lane pipeline on the HPV16 demo MAF
+uv run --package ghostframe ghostframe analyze data/demo/sample.maf --fasta data/demo/hpv16_k02718.fasta
+
 # Run tests
 uv run pytest
 

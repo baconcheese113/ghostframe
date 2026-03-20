@@ -10,7 +10,7 @@ min_length bases are excluded.
 """
 
 from ghostframe.models import ORF
-from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement  # noqa: F401
+from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement
 
 
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
@@ -22,16 +22,16 @@ def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
 
     Returns:
         List of ORF objects ordered by frame (1-6) then by position.
-
-    Hints:
-        - Uppercase the input sequence.
-        - Frames 1-3 scan the forward strand at offsets 0, 1, 2.
-        - Frames 4-6 scan the reverse complement at offsets 0, 1, 2.
-        - Use reverse_complement() to get the reverse strand.
-        - Delegate each frame to find_orfs_in_frame().
-        - Results must be ordered by frame number (1-6), then by position.
     """
-    raise NotImplementedError("find_orfs not yet implemented")
+    sequence = sequence.upper()
+    rc = reverse_complement(sequence)
+    orfs: list[ORF] = []
+    for frame in range(1, 4):
+        orfs.extend(find_orfs_in_frame(sequence, frame, min_length))
+    for frame in range(4, 7):
+        orfs.extend(find_orfs_in_frame(rc, frame, min_length, original_seq_len=len(sequence)))
+    orfs.sort(key=lambda o: (o.frame, o.pos))
+    return orfs
 
 
 def find_orfs_in_frame(
@@ -41,9 +41,6 @@ def find_orfs_in_frame(
     original_seq_len: int | None = None,
 ) -> list[ORF]:
     """Find all maximal ORFs in a single reading frame.
-
-    This is the inner loop of the scanner. It walks triplets from the frame
-    offset, finds ATG start codons, and reads until the first in-frame stop.
 
     Args:
         sequence: DNA string (already forward or reverse-complemented).
@@ -55,20 +52,28 @@ def find_orfs_in_frame(
 
     Returns:
         List of ORF objects for this frame, ordered by position.
-
-    Hints:
-        - The frame offset is (frame - 1) % 3.
-        - Walk the sequence in steps of 3 starting from the offset.
-        - When you find ATG, scan forward (in triplets) for a stop codon.
-        - An ORF is maximal: first ATG to first in-frame stop. If multiple ATGs
-          precede the same stop, the ORF starts at the first ATG.
-        - The stop codon IS included in the ORF length and DNA.
-        - If no stop codon is found before the sequence ends, it's not a valid ORF.
-        - After finding a stop, continue scanning from after the stop codon.
-        - Use _compute_position() for the reported position.
-        - Only include ORFs with length >= min_length.
     """
-    raise NotImplementedError("find_orfs_in_frame not yet implemented")
+    if original_seq_len is None:
+        original_seq_len = len(sequence)
+    is_reverse = frame >= 4
+    offset = (frame - 1) % 3
+    orfs: list[ORF] = []
+    orf_start: int | None = None
+    i = offset
+    while i + 3 <= len(sequence):
+        codon = sequence[i : i + 3].upper()
+        if codon == "ATG" and orf_start is None:
+            orf_start = i
+        elif codon in STOP_CODONS and orf_start is not None:
+            orf_end = i + 3
+            orf_dna = sequence[orf_start:orf_end]
+            orf_length = orf_end - orf_start
+            if orf_length >= min_length:
+                pos = _compute_position(orf_start, is_reverse, original_seq_len)
+                orfs.append(ORF(frame=frame, pos=pos, length=orf_length, dna=orf_dna))
+            orf_start = None
+        i += 3
+    return orfs
 
 
 def _compute_position(
@@ -82,4 +87,6 @@ def _compute_position(
     Reverse frames: POS = -(orf_start_idx + 1), representing position from
     the right end of the original sequence (rightmost base is -1).
     """
-    raise NotImplementedError("_compute_position not yet implemented")
+    if is_reverse:
+        return -(orf_start_idx + 1)
+    return orf_start_idx + 1
