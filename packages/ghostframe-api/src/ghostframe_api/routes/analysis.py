@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from ghostframe.orfs import parse_file, find_orfs
+from ghostframe.orfs import find_orfs, parse_file
 from ghostframe_api.schemas import (
     AnalysisRequest,
     AnalysisResponse,
@@ -33,7 +33,7 @@ async def start_analysis(request: AnalysisRequest) -> AnalysisResponse:
             else:
                 label = "raw sequence"
                 seq_lines = lines
-            sequence = ''.join(l.strip().upper() for l in seq_lines if l.strip())
+            sequence = ''.join(line.strip().upper() for line in seq_lines if line.strip())
         else:
             records = parse_file(_DEMO_FASTA)
             sequence = records[0].sequence
