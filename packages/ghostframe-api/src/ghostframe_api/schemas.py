@@ -27,7 +27,7 @@ class FrameEffectResponse(BaseModel):
     position: int
     frame: int
     old_class: str
-    new_class: str      # "Missense" | "Stop Gain" | "Start Loss"
+    new_class: str  # "Missense" | "Stop Gain" | "Start Loss"
     ref_codon: str
     alt_codon: str
     ref_aa: str
@@ -47,7 +47,7 @@ class AnalysisSummary(BaseModel):
 
 class StepResult(BaseModel):
     name: str
-    status: str   # "success" | "error" | "not_implemented" | "skipped"
+    status: str  # "success" | "error" | "not_implemented" | "skipped"
     detail: str
 
 
@@ -57,7 +57,7 @@ class AnalysisRequest(BaseModel):
     accession: str = "K02718.1"
     use_demo: bool = True
     min_orf_length: int = 50
-    input_type: str = "accession"   # "accession" | "sequence"
+    input_type: str = "accession"  # "accession" | "sequence"
     raw_sequence: str | None = None  # populated when input_type == "sequence"
 
 
@@ -65,7 +65,7 @@ class AnalysisResponse(BaseModel):
     """Response with analysis job status and results."""
 
     job_id: str
-    status: str                # "complete" | "partial" | "error"
+    status: str  # "complete" | "partial" | "error"
     steps: list[StepResult] = []
     summary: AnalysisSummary | None = None
     variants: list[FrameEffectResponse] = []
