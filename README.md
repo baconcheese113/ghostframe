@@ -30,6 +30,18 @@ from ghostframe.seqfetch import local
 print(local.fetch('K02718.1', 0, 100, 'data/demo/hpv16_k02718.fasta'))
 "
 
+# Reclassify a variant across all 6 reading frames
+uv run --package ghostframe python -c "
+from ghostframe.models import NormalizedVariant, GenomicWindow, ORF
+from ghostframe.reclassify import engine, summary
+
+window = GenomicWindow(chrom='chr1', start=0, end=9, sequence='ATGACGTTT')
+orfs = [ORF(frame=1, pos=1, length=9, dna='ATGACGTTT')]
+variant = NormalizedVariant(chrom='chr1', pos=4, ref='A', alt='T', classification='Silent', gene='DEMO')
+effects = engine.reclassify(variant, orfs, window)
+print(summary.aggregate(effects))
+"
+
 # Run tests
 uv run pytest
 
@@ -47,7 +59,7 @@ ghostframe/
         orfs/             # 6-frame ORF scanner (implemented)
         variants/         # MAF/VCF intake (stubbed)
         seqfetch/         # Reference sequence retrieval (implemented)
-        reclassify/       # Multi-frame reclassification (stubbed)
+        reclassify/       # Multi-frame reclassification (implemented)
         peptides/         # Kmer generation (stubbed)
         mhc/              # MHC binding prediction (stubbed)
         evidence/         # External evidence linking (stubbed)
