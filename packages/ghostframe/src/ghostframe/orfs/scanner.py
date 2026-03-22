@@ -10,7 +10,6 @@ min_length bases are excluded.
 """
 
 from ghostframe.models import ORF
-from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement  # noqa: F401
 
 
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
@@ -71,7 +70,7 @@ def find_orfs_in_frame(
     raise NotImplementedError("find_orfs_in_frame not yet implemented")
 
 
-def _compute_position(
+def _compute_position( # type: ignore
     orf_start_idx: int,
     is_reverse: bool,
     original_seq_len: int,

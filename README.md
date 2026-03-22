@@ -30,6 +30,15 @@ from ghostframe.seqfetch import local
 print(local.fetch('K02718.1', 0, 100, 'data/demo/hpv16_k02718.fasta'))
 "
 
+# Look up external evidence for a variant
+uv run --package ghostframe python -c "
+from ghostframe.models import NormalizedVariant
+from ghostframe.evidence import clinvar, synmicdb
+v = NormalizedVariant(chrom='17', pos=7675994, ref='G', alt='T', classification='Silent', gene='TP53')
+print('SynMICdb:', synmicdb.lookup(v))
+print('ClinVar:', clinvar.lookup(v))
+"
+
 # Run tests
 uv run pytest
 
@@ -45,12 +54,12 @@ ghostframe/
     ghostframe/           # Core Python library
       src/ghostframe/
         orfs/             # 6-frame ORF scanner (implemented)
-        variants/         # MAF/VCF intake (stubbed)
+        variants/         # MAF/VCF intake (implemented)
         seqfetch/         # Reference sequence retrieval (implemented)
         reclassify/       # Multi-frame reclassification (stubbed)
-        peptides/         # Kmer generation (stubbed)
-        mhc/              # MHC binding prediction (stubbed)
-        evidence/         # External evidence linking (stubbed)
+        peptides/         # Kmer generation (implemented)
+        mhc/              # MHC binding prediction (implemented)
+        evidence/         # External evidence linking (implemented)
         reports/          # Output generation (stubbed)
         pipeline/         # Orchestration (stubbed)
         cli/              # CLI entry points

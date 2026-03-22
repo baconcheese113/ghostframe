@@ -1,5 +1,7 @@
 """Tests for 6-frame ORF scanning engine."""
 
+from pathlib import Path
+
 import pytest
 
 from ghostframe.orfs.scanner import find_orfs, find_orfs_in_frame
@@ -143,7 +145,7 @@ class TestFindOrfs:
         assert frames == sorted(frames)
 
     @pytest.mark.golden
-    def test_simple_fasta_sequence(self, simple_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_simple_fasta_sequence(self, simple_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(simple_fasta_path)
@@ -155,7 +157,7 @@ class TestFindOrfs:
         assert frame1_orfs[0].dna == "ATGAAAGGATTTCCCGGGTTTAAACCCTGA"
 
     @pytest.mark.golden
-    def test_multi_seq(self, multi_seq_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_multi_seq(self, multi_seq_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(multi_seq_fasta_path)
@@ -166,7 +168,7 @@ class TestFindOrfs:
         assert len(frame1_seq2) >= 1
         assert frame1_seq2[0].length == 6  # ATG TAA
 
-    def test_edge_case_no_atg(self, edge_cases_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_edge_case_no_atg(self, edge_cases_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(edge_cases_fasta_path)
@@ -175,7 +177,7 @@ class TestFindOrfs:
         frame1_orfs = [o for o in orfs if o.frame == 1]
         assert frame1_orfs == []
 
-    def test_edge_case_atg_stop(self, edge_cases_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_edge_case_atg_stop(self, edge_cases_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(edge_cases_fasta_path)
@@ -185,7 +187,7 @@ class TestFindOrfs:
         assert len(frame1_orfs) == 1
         assert frame1_orfs[0].length == 6
 
-    def test_edge_case_no_stop(self, edge_cases_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_edge_case_no_stop(self, edge_cases_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(edge_cases_fasta_path)
@@ -195,7 +197,7 @@ class TestFindOrfs:
         # No stop codon → not maximal → no ORF
         assert frame1_orfs == []
 
-    def test_edge_case_overlapping_atg(self, edge_cases_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_edge_case_overlapping_atg(self, edge_cases_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(edge_cases_fasta_path)
@@ -207,7 +209,7 @@ class TestFindOrfs:
         assert frame1_orfs[0].dna.startswith("ATG")
         assert frame1_orfs[0].pos == 1
 
-    def test_edge_case_boundary_orf(self, edge_cases_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_edge_case_boundary_orf(self, edge_cases_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
 
         records = parse_file(edge_cases_fasta_path)

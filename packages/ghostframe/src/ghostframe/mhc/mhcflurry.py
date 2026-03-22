@@ -36,7 +36,7 @@ class MHCflurryPredictor(MHCPredictor):
     @classmethod
     def _load(cls) -> Class1PresentationPredictor:
         if cls._predictor is None:
-            cls._predictor = Class1PresentationPredictor.load()
+            cls._predictor = Class1PresentationPredictor.load()  # type: ignore[reportUnknownMemberType]
         return cls._predictor
 
     def predict(

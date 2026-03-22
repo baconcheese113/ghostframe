@@ -1,5 +1,7 @@
 """Tests for ORF output formatting."""
 
+from pathlib import Path
+
 import pytest
 
 from ghostframe.models import ORF, FastaRecord
@@ -94,7 +96,7 @@ class TestFormatAllOrfs:
 class TestGoldenOutput:
     """Golden output tests — compare exact strings."""
 
-    def test_simple_fasta_output(self, simple_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_simple_fasta_output(self, simple_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
         from ghostframe.orfs.scanner import find_orfs
 
@@ -108,12 +110,12 @@ class TestGoldenOutput:
         # Verify codon-spaced output
         assert "ATG AAA GGA TTT CCC GGG TTT AAA CCC TGA" in output
 
-    def test_multi_seq_output(self, multi_seq_fasta_path) -> None:  # type: ignore[no-untyped-def]
+    def test_multi_seq_output(self, multi_seq_fasta_path: Path) -> None:
         from ghostframe.orfs.fasta import parse_file
         from ghostframe.orfs.scanner import find_orfs
 
         records = parse_file(multi_seq_fasta_path)
-        all_output_parts = []
+        all_output_parts: list[str] = []
         for record in records:
             orfs = find_orfs(record.sequence, min_length=6)
             part = format_all_orfs(record, orfs)

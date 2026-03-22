@@ -3,7 +3,6 @@
     "ms-python.python",
     "ms-python.vscode-pylance",
     "charliermarsh.ruff",
-    "ms-python.mypy-type-checker",
     "bierner.markdown-mermaid",
     "redhat.vscode-yaml",
     "tamasfe.even-better-toml",

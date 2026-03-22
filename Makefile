@@ -12,7 +12,7 @@ lint:
 	uv run ruff check .
 
 typecheck:
-	uv run mypy packages/ghostframe/src/ghostframe/orfs/
+	uv run pyright
 
 test:
 	uv run pytest
@@ -32,5 +32,5 @@ dev-api:
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name .mypy_cache -exec rm -rf {} + 2>/dev/null || true
+	find . -type d -name .pyright -exec rm -rf {} + 2>/dev/null || true
 	rm -rf .ruff_cache .coverage htmlcov
