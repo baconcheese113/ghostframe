@@ -62,9 +62,7 @@ def parse_text(text: str) -> list[FastaRecord]:
             if header is not None:
                 sequence = "".join(sequence_lines).replace(" ", "").upper()
                 record_id = header.split()[0]
-                records.append(
-                    FastaRecord(id=record_id, description=header, sequence=sequence)
-                )
+                records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
 
             # Start new record
             header = line[1:].strip()

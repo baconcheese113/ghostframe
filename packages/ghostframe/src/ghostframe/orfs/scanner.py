@@ -10,7 +10,7 @@ min_length bases are excluded.
 """
 
 from ghostframe.models import ORF
-from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement  # noqa: F401
+from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement
 
 
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
