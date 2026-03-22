@@ -30,6 +30,14 @@ from ghostframe.seqfetch import local
 print(local.fetch('K02718.1', 0, 100, 'data/demo/hpv16_k02718.fasta'))
 "
 
+# Annotate a protein sequence against Pfam via EMBL-EBI HMMER (domain module)
+uv run --package ghostframe python -c "
+from ghostframe.domain import hmmer
+hits = hmmer.scan('MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSY')
+for h in hits:
+    print(f'{h.accession}  {h.name}  pos={h.start}-{h.end}  score={h.score:.1f}')
+"
+
 # Look up external evidence for a variant
 uv run --package ghostframe python -c "
 from ghostframe.models import NormalizedVariant
@@ -59,6 +67,7 @@ ghostframe/
         reclassify/       # Multi-frame reclassification (stubbed)
         peptides/         # Kmer generation (implemented)
         mhc/              # MHC binding prediction (implemented)
+        domain/           # Pfam domain annotation via EMBL-EBI HMMER (implemented)
         evidence/         # External evidence linking (implemented)
         reports/          # Output generation (stubbed)
         pipeline/         # Orchestration (stubbed)
@@ -87,7 +96,7 @@ uv run pytest tests/orfs/        # run just ORF tests
 uv run pytest -m golden          # run golden output tests
 uv run ruff check .              # lint
 uv run ruff format .             # format
-uv run mypy packages/ghostframe/src/ghostframe/orfs/  # type check
+uv run pyright                   # type check
 ```
 
 ## Team

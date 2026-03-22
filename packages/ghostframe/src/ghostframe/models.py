@@ -183,6 +183,17 @@ class EvidenceLookupResult:
 
 
 @dataclass
+class DomainHit:
+    """A Pfam domain hit from HMMER annotation."""
+
+    accession: str  # e.g. "PF00071"
+    name: str  # e.g. "Ras"
+    start: int  # 1-based start position in query protein
+    end: int  # 1-based end position in query protein
+    score: float  # bit score
+
+
+@dataclass
 class FastLaneResult:
     """Result of the fast lane pipeline."""
 
@@ -198,4 +209,5 @@ class DeepLaneResult:
     peptides: list[Peptide]
     binding_predictions: list[BindingPrediction]
     evidence: EvidenceLookupResult | None
+    domain_hits: list[DomainHit] = field(default_factory=lambda: [])
     narrative: str | None = None

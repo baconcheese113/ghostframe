@@ -28,7 +28,7 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `reclassify/` | Multi-frame reclassification | Fast | Stubbed |
 | `peptides/` | 8-11mer mutant peptide generation | Deep | Implemented |
 | `mhc/` | MHC binding prediction | Deep | Implemented |
-| `domain/` | HMMER/Pfam domain annotation (EMBL-EBI API + local) | Deep | Planned |
+| `domain/` | HMMER/Pfam domain annotation via EMBL-EBI JDispatcher API | Deep | Implemented |
 | `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Implemented |
 | `ranking/` | Candidate scoring and ranking | Deep | Planned |
 | `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
@@ -119,15 +119,13 @@ All external tools are accessed via free REST APIs for MVP and small cohorts. No
 | Service | Used by | Endpoint | Auth |
 |---|---|---|---|
 | OpenProt 2.0 | `evidence/openprot.py` | `https://api.openprot.org/api/2.0/HS/` | None |
-| EMBL-EBI HMMER | `domain/hmmer.py` (planned) | `https://www.ebi.ac.uk/Tools/hmmer/search/hmmscan` | None |
-| EMBL-EBI InterPro | `domain/interproscan.py` (planned) | `https://www.ebi.ac.uk/interpro/api/` | None |
+| EMBL-EBI HMMER JDispatcher | `domain/hmmer.py` | `https://www.ebi.ac.uk/Tools/services/rest/hmmer_hmmscan/` | None |
 | NCBI E-utilities | `evidence/clinvar.py`, `seqfetch/remote.py` | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` | API key optional (10 req/s free) |
 | Ensembl REST | `seqfetch/remote.py` | `https://rest.ensembl.org/` | None |
 | Anthropic Claude | `explain/narrator.py` (planned) | `https://api.anthropic.com/` | `ANTHROPIC_API_KEY` required |
 
 **Local/containerized tools (batch mode only, via Snakemake):**
-- HMMER: `conda install -c bioconda hmmer` (activated by `GHOSTFRAME_HMMER_LOCAL=1`)
-- InterProScan: BioContainers Singularity image — deferred; only for very large cohorts
+- HMMER: `conda install -c bioconda hmmer` — for future large-cohort Snakemake runs; not used by the core library
 - NetMHCpan: custom Dockerfile required if added as a future `MHCPredictor` adapter
 
 ## Workflow layer (Snakemake)
