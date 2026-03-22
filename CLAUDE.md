@@ -46,7 +46,7 @@ Always search for well-maintained open source libraries before writing new logic
 |---|---|---|
 | `click` | `cli/` | CLI framework |
 | `pyfaidx` | `seqfetch/local.py` | Indexed FASTA access |
-| `httpx` | `seqfetch/remote.py`, `evidence/` | HTTP to Ensembl/NCBI/OpenProt REST APIs |
+| `httpx` | `seqfetch/remote.py`, `evidence/`, `domain/` | HTTP to Ensembl/NCBI/OpenProt/EMBL-EBI REST APIs |
 | `pandas` | `variants/`, `evidence/synmicdb.py` | Tabular data manipulation |
 | `mhcflurry` | `mhc/mhcflurry.py` | MHC-I binding prediction |
 | `fastapi` + `pydantic` | `ghostframe-api` | API boundary only |
@@ -63,6 +63,11 @@ When planning or implementing any module, ask: *is there a standard library or w
 - Golden test fixtures in `tests/fixtures/`, expected outputs in `data/demo/`
 - Stubbed modules use `raise NotImplementedError("...")` with typed signatures
 - Test markers: `@pytest.mark.golden`, `@pytest.mark.integration`, `@pytest.mark.slow`
+- **Branch naming**: `feat/<issue-number>-<short-slug>` (e.g. `feat/23-domain-annotation`)
+- **No `__init__.py` in `tests/` subdirectories** — `--import-mode=importlib` makes them unnecessary; no other test subdirectory has one
+- **Update docs after every change** — `README.md` (project layout, quickstart examples) and `docs/architecture.md` (module map status, remote API table) must stay current
+- **API spike before implementing any external service** — test the actual endpoint with curl before writing any module code; verify URL, request format, response format, and rate limits empirically (issue specs and API docs are often stale or wrong)
+- **Don't create stub files for deferred work** unless the issue explicitly requires them; a file that just raises `NotImplementedError` and has no planned implementation adds noise
 
 ## Module layout
 
@@ -74,6 +79,7 @@ When planning or implementing any module, ask: *is there a standard library or w
 | `reclassify/` | Stubbed | Multi-frame reclassification engine |
 | `peptides/` | Implemented | Kmer generation for MHC binding |
 | `mhc/` | Implemented | MHC binding prediction (MHCflurry) |
+| `domain/` | Implemented | Pfam domain annotation via EMBL-EBI HMMER JDispatcher |
 | `evidence/` | Implemented | OpenProt, SynMICdb, ClinVar linking |
 | `reports/` | Stubbed | Output generation |
 | `pipeline/` | Stubbed | Fast/deep lane orchestration |
