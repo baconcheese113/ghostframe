@@ -70,7 +70,7 @@ def find_orfs_in_frame(
     raise NotImplementedError("find_orfs_in_frame not yet implemented")
 
 
-def _compute_position( # type: ignore
+def _compute_position(  # type: ignore
     orf_start_idx: int,
     is_reverse: bool,
     original_seq_len: int,
