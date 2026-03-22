@@ -144,7 +144,7 @@ def find_orfs_in_frame(
     return orfs
 
 
-def _compute_position(
+def _compute_position(  # type: ignore
     orf_start_idx: int,
     is_reverse: bool,
     original_seq_len: int,

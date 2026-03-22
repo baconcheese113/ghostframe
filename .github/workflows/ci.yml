@@ -26,7 +26,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync
-      - run: uv run mypy packages/ghostframe/src/ghostframe/orfs/
+      - run: uv run pyright
 
   test:
     runs-on: ubuntu-latest

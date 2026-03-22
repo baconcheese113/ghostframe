@@ -18,4 +18,12 @@ def normalize(variant: Variant) -> NormalizedVariant:
     Returns:
         NormalizedVariant with standardized coordinates and alleles.
     """
-    raise NotImplementedError("Coordinate normalization not yet implemented")
+    chrom = variant.chrom.removeprefix("chr")
+    return NormalizedVariant(
+        chrom=chrom,
+        pos=variant.pos,
+        ref=variant.ref.upper(),
+        alt=variant.alt.upper(),
+        classification=variant.classification,
+        gene=variant.gene,
+    )
