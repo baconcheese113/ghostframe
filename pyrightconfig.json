@@ -1,0 +1,8 @@
+{
+  "include": [
+    "packages/ghostframe/src",
+    "packages/ghostframe-api/src",
+    "tests"
+  ],
+  "typeCheckingMode": "strict"
+}

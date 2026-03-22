@@ -25,15 +25,15 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `orfs/` | 6-frame ORF scanning | Fast | Implemented |
 | `variants/` | MAF/VCF parsing, filtering | Fast | Implemented |
 | `seqfetch/` | Reference sequence retrieval | Fast | Implemented |
-| `reclassify/` | Multi-frame reclassification | Fast | Implemented |
-| `peptides/` | 8-11mer mutant peptide generation | Deep | Stubbed |
-| `mhc/` | MHC binding prediction | Deep | Stubbed |
-| `domain/` | HMMER/Pfam domain annotation (EMBL-EBI API + local) | Deep | Stubbed |
-| `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Stubbed |
-| `ranking/` | Candidate scoring and ranking | Deep | Stubbed |
-| `explain/` | LLM narrative explanation + MCP server | Deep | Stubbed |
-| `reports/` | Export (JSON, TSV) | Both | Partial |
-| `pipeline/` | Fast/deep lane orchestration | Both | Fast: Implemented |
+| `reclassify/` | Multi-frame reclassification | Fast | Stubbed |
+| `peptides/` | 8-11mer mutant peptide generation | Deep | Implemented |
+| `mhc/` | MHC binding prediction | Deep | Implemented |
+| `domain/` | HMMER/Pfam domain annotation (EMBL-EBI API + local) | Deep | Planned |
+| `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Implemented |
+| `ranking/` | Candidate scoring and ranking | Deep | Planned |
+| `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
+| `reports/` | Export (JSON, TSV) | Both | Stubbed |
+| `pipeline/` | Fast/deep lane orchestration | Both | Stubbed |
 | `cli/` | Click CLI entry points | N/A | Partial |
 
 ## Pipeline flow
@@ -118,11 +118,12 @@ All external tools are accessed via free REST APIs for MVP and small cohorts. No
 
 | Service | Used by | Endpoint | Auth |
 |---|---|---|---|
-| EMBL-EBI HMMER | `domain/hmmer.py` | `https://www.ebi.ac.uk/Tools/hmmer/search/hmmscan` | None |
-| EMBL-EBI InterPro | `domain/interproscan.py` (stub) | `https://www.ebi.ac.uk/interpro/api/` | None |
+| OpenProt 2.0 | `evidence/openprot.py` | `https://api.openprot.org/api/2.0/HS/` | None |
+| EMBL-EBI HMMER | `domain/hmmer.py` (planned) | `https://www.ebi.ac.uk/Tools/hmmer/search/hmmscan` | None |
+| EMBL-EBI InterPro | `domain/interproscan.py` (planned) | `https://www.ebi.ac.uk/interpro/api/` | None |
 | NCBI E-utilities | `evidence/clinvar.py`, `seqfetch/remote.py` | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` | API key optional (10 req/s free) |
 | Ensembl REST | `seqfetch/remote.py` | `https://rest.ensembl.org/` | None |
-| Anthropic Claude | `explain/narrator.py` | `https://api.anthropic.com/` | `ANTHROPIC_API_KEY` required |
+| Anthropic Claude | `explain/narrator.py` (planned) | `https://api.anthropic.com/` | `ANTHROPIC_API_KEY` required |
 
 **Local/containerized tools (batch mode only, via Snakemake):**
 - HMMER: `conda install -c bioconda hmmer` (activated by `GHOSTFRAME_HMMER_LOCAL=1`)

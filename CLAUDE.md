@@ -29,7 +29,7 @@ uv run ruff check .                   # lint
 uv run ruff check --select I --fix && uv run ruff format   # format
 
 # Type check
-uv run mypy packages/ghostframe/src/ghostframe/orfs/
+uv run pyright
 
 # Run CLI
 uv run --package ghostframe orfs data/demo/hpv16_k02718.fasta --min-len 50
@@ -46,8 +46,9 @@ Always search for well-maintained open source libraries before writing new logic
 |---|---|---|
 | `click` | `cli/` | CLI framework |
 | `pyfaidx` | `seqfetch/local.py` | Indexed FASTA access |
-| `httpx` | `seqfetch/remote.py` | Async HTTP to Ensembl/UCSC REST |
-| `pandas` | `reports/`, `variants/` | Tabular data manipulation |
+| `httpx` | `seqfetch/remote.py`, `evidence/` | HTTP to Ensembl/NCBI/OpenProt REST APIs |
+| `pandas` | `variants/`, `evidence/synmicdb.py` | Tabular data manipulation |
+| `mhcflurry` | `mhc/mhcflurry.py` | MHC-I binding prediction |
 | `fastapi` + `pydantic` | `ghostframe-api` | API boundary only |
 
 When planning or implementing any module, ask: *is there a standard library or well-known package that already does this?*
@@ -68,12 +69,12 @@ When planning or implementing any module, ask: *is there a standard library or w
 | Module | Status | Purpose |
 |--------|--------|---------|
 | `orfs/` | Implemented | 6-frame ORF scanning (professor-gradable) |
-| `variants/` | Stubbed | MAF/VCF parsing and filtering |
-| `seqfetch/` | Stubbed | Reference sequence retrieval |
+| `variants/` | Implemented | MAF/VCF parsing and filtering |
+| `seqfetch/` | Implemented | Reference sequence retrieval |
 | `reclassify/` | Stubbed | Multi-frame reclassification engine |
-| `peptides/` | Stubbed | Kmer generation for MHC binding |
-| `mhc/` | Stubbed | MHC binding prediction |
-| `evidence/` | Stubbed | External database linking |
+| `peptides/` | Implemented | Kmer generation for MHC binding |
+| `mhc/` | Implemented | MHC binding prediction (MHCflurry) |
+| `evidence/` | Implemented | OpenProt, SynMICdb, ClinVar linking |
 | `reports/` | Stubbed | Output generation |
 | `pipeline/` | Stubbed | Fast/deep lane orchestration |
 | `cli/` | Partial | Click CLI entry points |
