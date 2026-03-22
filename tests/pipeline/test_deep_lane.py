@@ -33,14 +33,10 @@ from ghostframe.reports import export
 _DNA_30 = "ATG" + "GCC" * 9 + "TAA"
 
 _BINDING_TARGET = "ghostframe.pipeline.deep_lane.MHCflurryPredictor"
-_TRANSLATE_TARGET = "ghostframe.pipeline.deep_lane.translate"
 _HMMER_TARGET = "ghostframe.pipeline.deep_lane.hmmer.scan"
 _OPENPROT_TARGET = "ghostframe.pipeline.deep_lane.openprot.lookup"
 _SYNMICDB_TARGET = "ghostframe.pipeline.deep_lane.synmicdb.lookup"
 _CLINVAR_TARGET = "ghostframe.pipeline.deep_lane.clinvar.lookup"
-
-# Protein corresponding to _DNA_30: Met + 9xAla (stop excluded from translation)
-_PROTEIN_30 = "MAAAAAAAAA"
 
 
 def _make_orf() -> ORF:
@@ -137,10 +133,7 @@ def test_run_produces_ranked_candidates(
 ) -> None:
     """Single effect produces one ranked ScoredCandidate."""
     binding = _make_binding()
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor(binding)),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor(binding)):
         result = deep_lane.run(_make_fast_result([_make_effect(codon_pos=1)]))
 
     assert len(result.ranked_candidates) == 1
@@ -161,10 +154,7 @@ def test_run_none_variant_skips_evidence_lookups(
     mock_cv: MagicMock,
 ) -> None:
     """When effect.variant is None, evidence lookups are not called."""
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor()),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
         deep_lane.run(_make_fast_result([_make_effect(codon_pos=1, with_variant=False)]))
 
     mock_hmmer.assert_called_once()
@@ -184,10 +174,7 @@ def test_run_with_variant_calls_evidence_lookups(
     mock_cv: MagicMock,
 ) -> None:
     """When effect.variant is set, all three evidence lookups are called."""
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor()),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
         deep_lane.run(_make_fast_result([_make_effect(codon_pos=1, with_variant=True)]))
 
     mock_op.assert_called_once()
@@ -206,10 +193,7 @@ def test_run_no_codon_pos_falls_back_to_all_kmers(
     _mock_cv: MagicMock,
 ) -> None:
     """When codon_pos is None, peptides are still generated (all k-mer fallback)."""
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor()),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
         result = deep_lane.run(_make_fast_result([_make_effect(codon_pos=None)]))
 
     # Protein from _DNA_30 is "MAAAAAAAAA" (10 AA). 8-10mers fit.
@@ -249,10 +233,7 @@ def test_run_evidence_tier_escalates_with_synmicdb(
     )
     mock_syn.return_value = synmicdb_hit
 
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor()),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
         result = deep_lane.run(_make_fast_result([_make_effect(codon_pos=1, with_variant=True)]))
 
     assert result.ranked_candidates[0].evidence is not None
@@ -271,10 +252,7 @@ def test_run_multiple_effects_all_ranked(
 ) -> None:
     """Multiple effects each produce a ScoredCandidate sorted descending by score."""
     effects = [_make_effect(codon_pos=1), _make_effect(codon_pos=2)]
-    with (
-        patch(_BINDING_TARGET, _make_mock_predictor()),
-        patch(_TRANSLATE_TARGET, return_value=_PROTEIN_30),
-    ):
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
         result = deep_lane.run(_make_fast_result(effects))
 
     assert len(result.ranked_candidates) == 2
@@ -335,11 +313,7 @@ def test_to_json_score_value_preserved(tmp_path: Path) -> None:
 @pytest.mark.integration
 @pytest.mark.slow
 def test_run_integration_hpv16_orf() -> None:
-    """End-to-end deep lane run with real MHCflurry + HMMER APIs.
-
-    translate() is still a stub pending PR #20; patched here with a known
-    protein so the rest of the pipeline runs end-to-end.
-    """
+    """End-to-end deep lane run with real MHCflurry + HMMER APIs."""
     dna = "ATG" + "GCC" * 9 + "TAA"
     orf = ORF(frame=1, pos=1, length=len(dna), dna=dna)
     effect = FrameEffect(
@@ -355,8 +329,7 @@ def test_run_integration_hpv16_orf() -> None:
         sankey_data=[],
         reclassified_variants=[effect],
     )
-    with patch(_TRANSLATE_TARGET, return_value="MAAAAAAAAA"):
-        result = deep_lane.run(fast_result, hla_alleles=["HLA-A*02:01"])
+    result = deep_lane.run(fast_result, hla_alleles=["HLA-A*02:01"])
     assert isinstance(result, DeepLaneResult)
     assert len(result.ranked_candidates) == 1
     assert result.ranked_candidates[0].score >= 0.0
