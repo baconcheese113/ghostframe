@@ -194,6 +194,17 @@ class DomainHit:
 
 
 @dataclass
+class ScoredCandidate:
+    """A reclassified variant candidate with an aggregate priority score."""
+
+    effect: FrameEffect
+    binding: BindingPrediction | None
+    domain_hits: list[DomainHit]
+    evidence: EvidenceLookupResult | None
+    score: float
+
+
+@dataclass
 class FastLaneResult:
     """Result of the fast lane pipeline."""
 
@@ -210,4 +221,5 @@ class DeepLaneResult:
     binding_predictions: list[BindingPrediction]
     evidence: EvidenceLookupResult | None
     domain_hits: list[DomainHit] = field(default_factory=lambda: [])
+    ranked_candidates: list[ScoredCandidate] = field(default_factory=lambda: [])
     narrative: str | None = None

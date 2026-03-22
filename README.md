@@ -47,6 +47,22 @@ print('SynMICdb:', synmicdb.lookup(v))
 print('ClinVar:', clinvar.lookup(v))
 "
 
+# Score and rank neoantigen candidates (ranking module)
+uv run --package ghostframe python -c "
+from ghostframe.models import BindingPrediction, DomainHit, EvidenceLookupResult, FrameEffect, ORF, Peptide, ScoredCandidate
+from ghostframe.ranking import scorer, ranker
+
+orf = ORF(frame=1, pos=1, length=30, dna='ATG' * 10)
+effect = FrameEffect(orf=orf, old_class='Silent', new_class='Missense', ref_aa='A', alt_aa='V')
+binding = BindingPrediction(peptide=Peptide(sequence='GILGFVFTL', start=0, k=9), allele='HLA-A*02:01', affinity=120.0, rank=1.5)
+domain_hits = [DomainHit(accession='PF00071', name='Ras', start=5, end=39, score=42.0)]
+evidence = EvidenceLookupResult(tier=3)
+
+s = scorer.score(effect, binding, domain_hits, evidence)
+candidates = ranker.rank([ScoredCandidate(effect=effect, binding=binding, domain_hits=domain_hits, evidence=evidence, score=s)])
+print(f'Top candidate score: {candidates[0].score:.3f}')
+"
+
 # Run tests
 uv run pytest
 
@@ -69,7 +85,8 @@ ghostframe/
         mhc/              # MHC binding prediction (implemented)
         domain/           # Pfam domain annotation via EMBL-EBI HMMER (implemented)
         evidence/         # External evidence linking (implemented)
-        reports/          # Output generation (stubbed)
+        ranking/          # Candidate scoring and ranking (implemented)
+        reports/          # Output generation (TSV implemented)
         pipeline/         # Orchestration (stubbed)
         cli/              # CLI entry points
     ghostframe-api/       # FastAPI server
@@ -84,7 +101,7 @@ ghostframe/
 GhostFrame uses a two-lane pipeline:
 
 - **Fast Lane**: MAF intake -> filter Silent variants -> fetch reference sequence -> 6-frame ORF scan -> reclassify -> summary
-- **Deep Lane**: Generate mutant peptides -> MHC binding prediction -> external evidence linking -> report
+- **Deep Lane**: Generate mutant peptides -> MHC binding prediction -> domain annotation -> external evidence linking -> candidate scoring/ranking -> report
 
 See [docs/architecture.md](docs/architecture.md) for details.
 
