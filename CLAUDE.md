@@ -82,6 +82,6 @@ When planning or implementing any module, ask: *is there a standard library or w
 | `domain/` | Implemented | Pfam domain annotation via EMBL-EBI HMMER JDispatcher |
 | `evidence/` | Implemented | OpenProt, SynMICdb, ClinVar linking |
 | `ranking/` | Implemented | Candidate scoring (scorer.py) and ranking (ranker.py + TSV export) |
-| `reports/` | Partial | TSV export via ranking.ranker; JSON stubbed |
-| `pipeline/` | Stubbed | Fast/deep lane orchestration |
+| `reports/` | Partial | TSV export via ranking.ranker; JSON via dataclasses.asdict |
+| `pipeline/` | Partial | Fast lane stubbed; deep lane implemented |
 | `cli/` | Partial | Click CLI entry points |

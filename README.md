@@ -63,6 +63,20 @@ candidates = ranker.rank([ScoredCandidate(effect=effect, binding=binding, domain
 print(f'Top candidate score: {candidates[0].score:.3f}')
 "
 
+# Run the deep lane pipeline on a FastLaneResult
+uv run --package ghostframe python -c "
+from ghostframe.models import FastLaneResult, FrameEffect, ORF, ReclassifySummary
+from ghostframe.pipeline import deep_lane
+
+orf = ORF(frame=1, pos=1, length=30, dna='ATG' + 'GCC' * 9 + 'TAA')
+effect = FrameEffect(orf=orf, old_class='Silent', new_class='Missense', ref_aa='A', alt_aa='V', codon_pos=3)
+fast_result = FastLaneResult(summary=ReclassifySummary(), sankey_data=[], reclassified_variants=[effect])
+# NOTE: calls HMMER (remote) and MHCflurry (local) — may take ~2 min
+result = deep_lane.run(fast_result, hla_alleles=['HLA-A*02:01'])
+print(f'Ranked candidates: {len(result.ranked_candidates)}')
+print(f'Top score: {result.ranked_candidates[0].score:.3f}')
+"
+
 # Run tests
 uv run pytest
 
@@ -86,8 +100,8 @@ ghostframe/
         domain/           # Pfam domain annotation via EMBL-EBI HMMER (implemented)
         evidence/         # External evidence linking (implemented)
         ranking/          # Candidate scoring and ranking (implemented)
-        reports/          # Output generation (TSV implemented)
-        pipeline/         # Orchestration (stubbed)
+        reports/          # Output generation (TSV + JSON implemented)
+        pipeline/         # Orchestration (deep lane implemented; fast lane stubbed)
         cli/              # CLI entry points
     ghostframe-api/       # FastAPI server
   tests/                  # Test suite (mirrors source structure)

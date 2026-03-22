@@ -75,6 +75,8 @@ class FrameEffect:
     alt_aa: str
     evidence_tier: int = 1  # 1=scan-only, 2=OpenProt-confirmed, 3=SynMICdb-scored
     synmicdb_score: float | None = None
+    codon_pos: int | None = None  # 0-based index of mutated codon in ORF protein
+    variant: NormalizedVariant | None = None  # source variant (for evidence lookups)
 
 
 @dataclass
