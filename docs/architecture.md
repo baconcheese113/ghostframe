@@ -33,7 +33,7 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `ranking/` | Candidate scoring and ranking | Deep | Implemented |
 | `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
 | `reports/` | Export (JSON, TSV) | Both | Partial (TSV implemented) |
-| `pipeline/` | Fast/deep lane orchestration | Both | Stubbed |
+| `pipeline/` | Fast/deep lane orchestration | Both | Partial (deep lane implemented) |
 | `cli/` | Click CLI entry points | N/A | Partial |
 
 ## Pipeline flow

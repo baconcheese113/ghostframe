@@ -6,20 +6,27 @@ downstream consumption or visualization.
 Pipeline position: reclassify + mhc + evidence → ranking → [reports.export] → user
 """
 
+import dataclasses
+import json
 from pathlib import Path
 
-from ghostframe.models import ScoredCandidate
+from ghostframe.models import DeepLaneResult, ScoredCandidate
 from ghostframe.ranking import ranker
 
 
-def to_json(results: object, path: Path) -> None:
-    """Export analysis results as JSON.
+def to_json(result: DeepLaneResult, path: Path) -> None:
+    """Export a DeepLaneResult as a JSON file.
 
     Args:
-        results: Analysis results object.
+        result: Deep lane analysis result.
         path: Output file path.
+
+    The output is a JSON object with full provenance per candidate:
+    peptides, binding predictions, domain hits, evidence, and ranked
+    candidates with aggregate scores.
     """
-    raise NotImplementedError("JSON export not yet implemented")
+    data = dataclasses.asdict(result)
+    path.write_text(json.dumps(data, indent=2, default=str), encoding="utf-8")
 
 
 def to_tsv(candidates: list[ScoredCandidate], path: Path) -> None:
