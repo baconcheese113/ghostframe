@@ -81,6 +81,7 @@ When planning or implementing any module, ask: *is there a standard library or w
 | `mhc/` | Implemented | MHC binding prediction (MHCflurry) |
 | `domain/` | Implemented | Pfam domain annotation via EMBL-EBI HMMER JDispatcher |
 | `evidence/` | Implemented | OpenProt, SynMICdb, ClinVar linking |
-| `reports/` | Stubbed | Output generation |
+| `ranking/` | Implemented | Candidate scoring (scorer.py) and ranking (ranker.py + TSV export) |
+| `reports/` | Partial | TSV export via ranking.ranker; JSON stubbed |
 | `pipeline/` | Stubbed | Fast/deep lane orchestration |
 | `cli/` | Partial | Click CLI entry points |

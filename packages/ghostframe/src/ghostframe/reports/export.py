@@ -3,10 +3,13 @@
 Serializes analysis results into structured output files for
 downstream consumption or visualization.
 
-Pipeline position: reclassify + mhc + evidence → [reports.export] → user
+Pipeline position: reclassify + mhc + evidence → ranking → [reports.export] → user
 """
 
 from pathlib import Path
+
+from ghostframe.models import ScoredCandidate
+from ghostframe.ranking import ranker
 
 
 def to_json(results: object, path: Path) -> None:
@@ -19,11 +22,11 @@ def to_json(results: object, path: Path) -> None:
     raise NotImplementedError("JSON export not yet implemented")
 
 
-def to_tsv(results: object, path: Path) -> None:
-    """Export analysis results as TSV.
+def to_tsv(candidates: list[ScoredCandidate], path: Path) -> None:
+    """Export ranked candidates as a TSV file.
 
     Args:
-        results: Analysis results object.
+        candidates: Ranked ScoredCandidate list (from ranking.ranker.rank()).
         path: Output file path.
 
     TSV columns (per peptide candidate):
@@ -31,4 +34,4 @@ def to_tsv(results: object, path: Path) -> None:
         percentile_rank, domain_accession, domain_name, evidence_tier,
         synmicdb_score, score
     """
-    raise NotImplementedError("TSV export not yet implemented")
+    ranker.to_tsv(candidates, path)
