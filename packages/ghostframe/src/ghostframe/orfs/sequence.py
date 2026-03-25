@@ -75,7 +75,6 @@ STOP_CODONS = {"TAA", "TAG", "TGA"}
 
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
 
-
 def reverse_complement(seq: str) -> str:
     """Return the reverse complement of a DNA sequence.
 
@@ -92,7 +91,16 @@ def reverse_complement(seq: str) -> str:
         - The _COMPLEMENT translation table and str.translate() may be useful.
         - Don't forget to reverse the string after complementing.
     """
-    raise NotImplementedError("reverse_complement not yet implemented")
+    # Conversion of the sequence to uppercase
+    seq = seq.upper()
+    
+    # Utilize the translation table and define the complement
+    comp = seq.translate(_COMPLEMENT)
+    
+    # Reverse the complement
+    rev_comp = comp[::-1]
+    
+    return rev_comp
 
 
 def translate(dna: str) -> str:
@@ -113,4 +121,21 @@ def translate(dna: str) -> str:
         - Walk the string in steps of 3, look up each codon in CODON_TABLE.
         - Use 'X' for any codon not found in the table.
     """
-    raise NotImplementedError("translate not yet implemented")
+    # Conversion of the sequence to uppercase
+    dna = dna.upper()
+
+    # Raise error if the sequence cannot be divided into codons
+    if (len(dna) % 3) != 0:
+        raise ValueError ("not a multiple of 3")
+    
+    # Create protein string iterated by a for loop comparing codons to amino acids
+    protein = []
+    for i in range(0,len(dna),3): 
+        codon = dna[i:i+3] 
+        
+        if codon in STOP_CODONS:
+            protein.append("*")
+        else:
+            protein.append(CODON_TABLE.get(codon.upper(), 'X'))
+    
+    return "".join(protein)
