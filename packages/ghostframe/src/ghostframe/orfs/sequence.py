@@ -114,4 +114,14 @@ def translate(dna: str) -> str:
         - Walk the string in steps of 3, look up each codon in CODON_TABLE.
         - Use 'X' for any codon not found in the table.
     """
-    raise NotImplementedError("translate not yet implemented")
+    dna = dna.upper()
+    if len(dna) % 3 != 0:
+        raise ValueError("DNA length is not a multiple of 3")
+
+    protein_chars: list[str] = []
+    for i in range(0, len(dna), 3):
+        codon = dna[i : i + 3]
+        aa = CODON_TABLE.get(codon, "X")
+        protein_chars.append(aa)
+
+    return "".join(protein_chars)
