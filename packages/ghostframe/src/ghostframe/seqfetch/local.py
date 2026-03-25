@@ -1,12 +1,14 @@
 """Local FASTA sequence retrieval.
 
-Fetches sequence regions from a local indexed FASTA file.
-Future dependency: pysam or pyfaidx for indexed access.
+Fetches sequence regions from a local indexed FASTA file using pyfaidx.
 
 Pipeline position: variants.normalize → [seqfetch.local] → orfs
 """
 
 from pathlib import Path
+from typing import Any
+
+from pyfaidx import Fasta  # type: ignore[import-untyped]
 
 
 def fetch(chrom: str, start: int, end: int, ref_path: Path) -> str:
@@ -19,6 +21,10 @@ def fetch(chrom: str, start: int, end: int, ref_path: Path) -> str:
         ref_path: Path to the reference FASTA file.
 
     Returns:
-        DNA sequence string.
+        Uppercase DNA sequence string.
     """
-    raise NotImplementedError("Local sequence fetch not yet implemented")
+    fasta: Any = Fasta(str(ref_path))
+    try:
+        return str(fasta[chrom][start:end]).upper()
+    finally:
+        fasta.close()

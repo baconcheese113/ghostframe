@@ -7,6 +7,7 @@ cancer cohort analysis.
 Pipeline position: INPUT → [variants.maf] → variants.filters → ...
 """
 
+import csv
 from pathlib import Path
 
 from ghostframe.models import Variant
@@ -21,4 +22,18 @@ def parse(path: Path) -> list[Variant]:
     Returns:
         List of Variant records with chrom, pos, ref, alt, classification, gene.
     """
-    raise NotImplementedError("MAF parsing not yet implemented")
+    variants: list[Variant] = []
+    with open(path, encoding="utf-8") as f:
+        lines = (line for line in f if not line.startswith("#"))
+        for row in csv.DictReader(lines, delimiter="\t"):
+            variants.append(
+                Variant(
+                    chrom=row["Chromosome"],
+                    pos=int(row["Start_Position"]),
+                    ref=row["Reference_Allele"],
+                    alt=row["Tumor_Seq_Allele2"],
+                    classification=row["Variant_Classification"],
+                    gene=row["Hugo_Symbol"],
+                )
+            )
+    return variants
