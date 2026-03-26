@@ -14,5 +14,9 @@ def cli() -> None:
 
 @cli.command()
 def analyze() -> None:
-    """Run the GhostFrame analysis pipeline."""
+    """Run the GhostFrame analysis pipeline.
+
+    Output table columns: variant_id, frame, old_class, new_class,
+    ref_aa, alt_aa, evidence_tier.
+    """
     raise NotImplementedError("Pipeline analysis not yet implemented")

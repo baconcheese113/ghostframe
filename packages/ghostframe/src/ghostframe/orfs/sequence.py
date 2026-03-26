@@ -102,6 +102,9 @@ def reverse_complement(seq: str) -> str:
 
     return rev_comp
 
+    seq = seq.upper()
+    return seq.translate(_COMPLEMENT)[::-1]
+
 
 def translate(dna: str) -> str:
     """Translate a DNA sequence to a protein sequence using the standard genetic code.

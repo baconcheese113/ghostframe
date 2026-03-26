@@ -3,5 +3,4 @@
 Links reclassified variants to known resources for evidence-backed reporting.
 
 Pipeline position: reclassify → [evidence] → reports
-Future dependencies: httpx
 """

@@ -2,13 +2,13 @@
 
 ## Executive summary
 
-This report proposes project options for a 3-person bioinformatics master’s group that **must** include a professor-gradable core Python module implementing an ORF-finder assignment (FASTA parsing, 6-frame scanning including reverse complement, maximal ATG→stop ORFs, minimum-length filter default 50, exact FASTA-style output with `FRAME/POS/LEN`, codon spacing, and 15 codons per line), and **extends** that core into an ambitious, cancer-focused pipeline designed to produce “shock appeal” results and fill a practical integration gap not typically offered as a single, end-to-end product by ["organization","NCBI","us bioinformatics institute"] or ["organization","EMBL-EBI","european bioinformatics institute"].  
+This report proposes project options for a 3-person bioinformatics master’s group that **must** include a professor-gradable core Python module implementing an ORF-finder assignment (FASTA parsing, 6-frame scanning including reverse complement, maximal ATG→stop ORFs, minimum-length filter default 50, exact FASTA-style output with `FRAME/POS/LEN`, codon spacing, and 15 codons per line), and **extends** that core into an ambitious, cancer-focused pipeline designed to produce “shock appeal” results and fill a practical integration gap not typically offered as a single, end-to-end product by ["organization","NCBI","us bioinformatics institute"] or ["organization","EMBL-EBI","european bioinformatics institute"].  
 
-The strongest, most feasible “shock” concept is a **Silent→Not-Silent Reclassifier** (“GhostFrame”): take somatic variants labeled “Silent” in open cancer mutation files and show that, under a **multi-frame** ORF view, some of these variants become missense/stop/start-loss in **overlapping or noncanonical ORFs**, then prioritize the resulting mutant peptides as potential **noncanonical neoantigens** using ["organization","MHCflurry","mhc-i predictor openvax"] or ["organization","NetMHCpan","mhc-i predictor dtu"]. This is strongly motivated by published results: ["organization","OpenVar","variant annotator noncanonical orfs"] showed that including noncanonical ORFs can dramatically increase “high-impact” variant calls versus conventional annotators on a cancer synonymous-mutation dataset, and highlighted clustering of variants in a dual-coding region in HEY2.  
+The strongest, most feasible “shock” concept is a **Silent→Not-Silent Reclassifier** (“GhostFrame”): take somatic variants labeled “Silent” in open cancer mutation files and show that, under a **multi-frame** ORF view, some of these variants become missense/stop/start-loss in **overlapping or noncanonical ORFs**, then prioritize the resulting mutant peptides as potential **noncanonical neoantigens** using ["organization","MHCflurry","mhc-i predictor openvax"] or ["organization","NetMHCpan","mhc-i predictor dtu"]. This is strongly motivated by published results: ["organization","OpenVar","variant annotator noncanonical orfs"] showed that including noncanonical ORFs can dramatically increase “high-impact” variant calls versus conventional annotators on a cancer synonymous-mutation dataset, and highlighted clustering of variants in a dual-coding region in HEY2.  
 
 As a fast, highly demonstrable second option, an **oncogenic virus dual-coding** pipeline (“OncoVirus Dual-Coding”) uses the same ORF core on compact viral genomes (e.g., HPV16 reference K02718.1), where overlapping ORFs are common and outputs are easy to validate; HPV16/18 are classified as carcinogenic to humans (Group 1) in IARC evaluations.  
 
-Because your goal is “industry-modern” reproducibility and delivery, each concept is designed as a small, gradable ORF module plus a reproducible workflow layer via ["organization","Snakemake","workflow engine"] or ["organization","Nextflow","workflow engine"] with container/conda environments.  
+Because your goal is “industry-modern” reproducibility and delivery, each concept is designed as a small, gradable ORF module plus a reproducible workflow layer via ["organization","Snakemake","workflow engine"] or ["organization","Nextflow","workflow engine"] with container/conda environments.  
 
 ## Evidence landscape and where “the gap” really is
 
@@ -16,11 +16,11 @@ Because your goal is “industry-modern” reproducibility and delivery, each co
 
 OpenVar frames the core scientific issue: thousands of functional ORFs exist outside reference annotations, including ORFs that overlap annotated coding regions in other frames; a key barrier has been software that can interpret variants in dual-coding regions.  
 
-["organization","OpenProt","alternative orf resource"] 2.0 positions itself as a proteogenomic resource providing a complete, freely accessible set of alternative ORFs (AltORFs) and functional annotations for proteins not present in conventional databases (e.g., RefSeq/Ensembl).  
+["organization","OpenProt","alternative orf resource"] 2.0 positions itself as a proteogenomic resource providing a complete, freely accessible set of alternative ORFs (AltORFs) and functional annotations for proteins not present in conventional databases (e.g., RefSeq/Ensembl).  
 
 ### “Silent” mutations in cancer are not necessarily biologically silent
 
-["organization","SynMICdb","synonymous mutations cancer db"] provides a large, curated resource of somatic synonymous mutations in cancer (reported as 659,194 in the paper), including recurrence, alternative events, and a SynMICdb score, which underpins the rationale for focusing on “Silent” variants as a high-yield, shock-friendly starting point.  
+["organization","SynMICdb","synonymous mutations cancer db"] provides a large, curated resource of somatic synonymous mutations in cancer (reported as 659,194 in the paper), including recurrence, alternative events, and a SynMICdb score, which underpins the rationale for focusing on “Silent” variants as a high-yield, shock-friendly starting point.  
 
 OpenVar used SynMICdb as its demonstration dataset and reported large increases in “high impact” variants when noncanonical ORFs are included, compared with common annotators, illustrating the magnitude of the blind spot.  
 
@@ -28,7 +28,7 @@ OpenVar used SynMICdb as its demonstration dataset and reported large increases 
 
 Recent reviews emphasize “cryptic” and noncanonical antigens as promising targets for precision immunotherapy and next-generation cancer vaccines.  
 
-On the methods side, ["organization","NovumRNA","noncanonical tumor antigen pipeline"] is a Nextflow pipeline for predicting multiple classes of noncanonical tumor-specific antigens from RNA-seq, demonstrating that the field treats ncTSAs as a concrete computational target, not a speculative concept.  
+On the methods side, ["organization","NovumRNA","noncanonical tumor antigen pipeline"] is a Nextflow pipeline for predicting multiple classes of noncanonical tumor-specific antigens from RNA-seq, demonstrating that the field treats ncTSAs as a concrete computational target, not a speculative concept.  
 
 ### Why an end-to-end student project can still be “novel”
 
@@ -170,7 +170,7 @@ This option is strongest when you want:
 
 ### Open-access cohort-level mutation files
 
-The ["organization","Genomic Data Commons","nci cancer data portal"] documents that MAF files exist at two permission levels: protected and somatic/open-access. The Cohort Level MAF tool is explicitly designed to select and download open-access MAFs for a cohort.  
+The ["organization","Genomic Data Commons","nci cancer data portal"] documents that MAF files exist at two permission levels: protected and somatic/open-access. The Cohort Level MAF tool is explicitly designed to select and download open-access MAFs for a cohort.  
 
 Automation options:
 - GDC API “files” endpoint example for retrieving MAF file metadata.  
@@ -188,7 +188,7 @@ OpenVar specifically analyzed SynMICdb and highlighted dual-coding enrichment in
 
 - HPV16 complete genome is publicly available as GenBank K02718.1 (7,904 bp).  
 - HPV16/18 carcinogenic classification and related IARC summaries are available through IARC/NCBI Bookshelf sources.  
-- ["organization","PaVE","papillomavirus episteme niaid"] provides curated papillomavirus references and visualization tools, including HPV16 transcript maps.  
+- ["organization","PaVE","papillomavirus episteme niaid"] provides curated papillomavirus references and visualization tools, including HPV16 transcript maps.  
 
 ### Practical “starter cohorts” for a 3-person team
 
@@ -214,9 +214,9 @@ To avoid overreach without a guaranteed compute budget:
 - MHCflurry: open-source package with CLI and Python interfaces; published in 2018 and extended (presentation/processing) in 2020.  
 
 **Domain/functional annotation**
-- ["organization","InterPro","protein family domain resource"] provides functional analysis/classification; InterProScan requirements and licensing are documented (Apache License; signature collections may have differing terms).  
-- ["organization","HMMER","profile hmm search suite"] is profile-HMM based; its User Guide states BSD 3-clause distribution.  
-- ["organization","Pfam","protein family database"] is available under CC0 per official Pfam/InterPro docs.  
+- ["organization","InterPro","protein family domain resource"] provides functional analysis/classification; InterProScan requirements and licensing are documented (Apache License; signature collections may have differing terms).  
+- ["organization","HMMER","profile hmm search suite"] is profile-HMM based; its User Guide states BSD 3-clause distribution.  
+- ["organization","Pfam","protein family database"] is available under CC0 per official Pfam/InterPro docs.  
 
 **Evidence linking (with licensing caution)**
 - ClinVar: publicly accessible archive of human variation with disease/drug response assertions and supporting evidence.  
@@ -315,12 +315,12 @@ NetMHCpan’s published benchmarking and data integration rationale provides an 
 
 **High-impact “shock” visuals**
 - “Silent→Not-Silent” sankey or flow diagram: Silent → (missense / stop-gain / other) by frame.
-- Lollipop plots by gene/locus showing where reclassified variants land, inspired by tools such as ["organization","ProteinPaint","st jude variant visualization"] (GDC documents it as a dynamic lollipop chart tool).  
-- Neoantigen candidate table with filters similar to the motivation behind ["organization","pVACview","neoantigen visualization tool"], which explicitly targets interactive neoantigen prioritization.  
+- Lollipop plots by gene/locus showing where reclassified variants land, inspired by tools such as ["organization","ProteinPaint","st jude variant visualization"] (GDC documents it as a dynamic lollipop chart tool).  
+- Neoantigen candidate table with filters similar to the motivation behind ["organization","pVACview","neoantigen visualization tool"], which explicitly targets interactive neoantigen prioritization.  
 
 **Embeddable genome views**
-- ["organization","JBrowse 2","genome browser embedded components"] provides embedded components for web apps.  
-- ["organization","igv.js","embeddable genome viewer"] runs in-browser and can be embedded with minimal dependencies, per its Bioinformatics paper.  
+- ["organization","JBrowse 2","genome browser embedded components"] provides embedded components for web apps.  
+- ["organization","igv.js","embeddable genome viewer"] runs in-browser and can be embedded with minimal dependencies, per its Bioinformatics paper.  
 
 **Practical stack**
 - Backend: FastAPI (Python), a simple job queue (RQ/Celery), and a results store (SQLite/Postgres).  
@@ -337,7 +337,7 @@ If you add an LLM, the highest-value role is **explanation and guided exploratio
   - summarizes outputs with citations to your computed artifacts (not web claims),
   - never executes shell directly.
 
-The ["organization","Model Context Protocol","open tool integration protocol"] spec describes how servers expose tools with schemas that models can invoke.  
+The ["organization","Model Context Protocol","open tool integration protocol"] spec describes how servers expose tools with schemas that models can invoke.  
 
 **Security and permissioning constraints**
 - MCP ecosystem guidance emphasizes tool safety, and reference implementations warn about risk when a server can access internal addresses or sensitive data.  
