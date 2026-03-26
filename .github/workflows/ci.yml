@@ -36,4 +36,11 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync
+      - name: Cache MHCflurry models
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/mhcflurry
+          key: mhcflurry-models-2.2.0
+      - name: Download MHCflurry models
+        run: uv run mhcflurry-downloads fetch models_class1_presentation
       - run: uv run pytest --cov=ghostframe --cov-report=term-missing
