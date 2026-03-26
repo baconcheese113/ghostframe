@@ -93,13 +93,13 @@ def reverse_complement(seq: str) -> str:
     """
     # Conversion of the sequence to uppercase
     seq = seq.upper()
-    
+
     # Utilize the translation table and define the complement
     comp = seq.translate(_COMPLEMENT)
-    
+
     # Reverse the complement
     rev_comp = comp[::-1]
-    
+
     return rev_comp
 
     seq = seq.upper()
@@ -130,15 +130,15 @@ def translate(dna: str) -> str:
     # Raise error if the sequence cannot be divided into codons
     if (len(dna) % 3) != 0:
         raise ValueError ("not a multiple of 3")
-    
+
     # Create protein string iterated by a for loop comparing codons to amino acids
     protein = []
-    for i in range(0,len(dna),3): 
-        codon = dna[i:i+3] 
-        
+    for i in range(0,len(dna),3):
+        codon = dna[i:i+3]
+
         if codon in STOP_CODONS:
             protein.append("*")
         else:
             protein.append(CODON_TABLE.get(codon.upper(), 'X'))
-    
+
     return "".join(protein)
