@@ -94,7 +94,7 @@ ghostframe/
         orfs/             # 6-frame ORF scanner (implemented)
         variants/         # MAF/VCF intake (implemented)
         seqfetch/         # Reference sequence retrieval (implemented)
-        reclassify/       # Multi-frame reclassification (stubbed)
+        reclassify/       # Multi-frame reclassification (implemented)
         peptides/         # Kmer generation (implemented)
         mhc/              # MHC binding prediction (implemented)
         domain/           # Pfam domain annotation via EMBL-EBI HMMER (implemented)

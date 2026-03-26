@@ -4,6 +4,10 @@ These are the foundational operations that the ORF scanner depends on.
 Re-exported from ghostframe.genetics so group members' imports are unaffected.
 """
 
+from ghostframe.genetics import CODON_TABLE
+
+__all__ = ["CODON_TABLE", "STOP_CODONS", "reverse_complement", "translate"]
+
 STOP_CODONS = {"TAA", "TAG", "TGA"}
 
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
