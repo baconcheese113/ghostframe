@@ -21,7 +21,12 @@ def parse_file(path: Path | str) -> list[FastaRecord]:
     Hints:
         - Read the file and delegate to parse_text().
     """
-    raise NotImplementedError("FASTA file parsing not yet implemented")
+    path = Path(path)
+
+    with path.open("r", encoding="utf-8") as f:
+        text = f.read()
+
+    return parse_text(text)
 
 
 def parse_text(text: str) -> list[FastaRecord]:
@@ -42,4 +47,34 @@ def parse_text(text: str) -> list[FastaRecord]:
         - Empty lines between sequences should be ignored.
         - Text with no '>' headers should return an empty list.
     """
-    raise NotImplementedError("FASTA text parsing not yet implemented")
+    records: list[FastaRecord] = []
+    header: str | None = None
+    sequence_lines: list[str] = []
+
+    for line in text.splitlines():
+        line = line.strip()
+
+        if not line:
+            continue  # skip empty lines
+
+        if line.startswith(">"):
+            # Save previous record if exists
+            if header is not None:
+                sequence = "".join(sequence_lines).replace(" ", "").upper()
+                record_id = header.split()[0]
+                records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
+
+            # Start new record
+            header = line[1:].strip()
+            sequence_lines = []
+        else:
+            # Accumulate sequence lines
+            sequence_lines.append(line)
+
+    # Add last record
+    if header is not None:
+        sequence = "".join(sequence_lines).replace(" ", "").upper()
+        record_id = header.split()[0]
+        records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
+
+    return records
