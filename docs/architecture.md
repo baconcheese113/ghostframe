@@ -31,10 +31,9 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `domain/` | HMMER/Pfam domain annotation via EMBL-EBI JDispatcher API | Deep | Implemented |
 | `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Implemented |
 | `ranking/` | Candidate scoring and ranking | Deep | Implemented |
-| `genetics.py` | Shared codon table, reverse complement, translate | N/A | Implemented |
 | `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
 | `reports/` | Export (JSON, TSV) | Both | Implemented (TSV + JSON) |
-| `pipeline/` | Fast/deep lane orchestration | Both | Partial (deep lane implemented) |
+| `pipeline/` | Fast/deep lane orchestration | Both | Implemented |
 | `cli/` | Click CLI entry points | N/A | Partial |
 
 ## Pipeline flow
