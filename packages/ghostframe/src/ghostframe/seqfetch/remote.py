@@ -22,7 +22,7 @@ def fetch(chrom: str, start: int, end: int) -> str:
         Uppercase DNA sequence string.
     """
     url = f"{_ENSEMBL_REST}/sequence/region/human/{chrom}:{start}..{end}"
-    response = httpx.get(url, headers={"Accept": "text/plain"}, follow_redirects=True)
+    response = httpx.get(url, headers={"Accept": "text/plain"}, follow_redirects=True, timeout=30.0)
     response.raise_for_status()
     print(f"Fetched sequence from Ensembl: {chrom}:{start}-{end} ({len(response.text.strip())} bp)")
     return response.text.strip().upper()
