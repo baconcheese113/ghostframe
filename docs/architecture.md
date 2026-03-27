@@ -25,14 +25,15 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `orfs/` | 6-frame ORF scanning | Fast | Implemented |
 | `variants/` | MAF/VCF parsing, filtering | Fast | Implemented |
 | `seqfetch/` | Reference sequence retrieval | Fast | Implemented |
-| `reclassify/` | Multi-frame reclassification | Fast | Stubbed |
+| `reclassify/` | Multi-frame reclassification | Fast | Implemented |
 | `peptides/` | 8-11mer mutant peptide generation | Deep | Implemented |
 | `mhc/` | MHC binding prediction | Deep | Implemented |
 | `domain/` | HMMER/Pfam domain annotation via EMBL-EBI JDispatcher API | Deep | Implemented |
 | `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Implemented |
 | `ranking/` | Candidate scoring and ranking | Deep | Implemented |
+| `genetics.py` | Shared codon table, reverse complement, translate | N/A | Implemented |
 | `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
-| `reports/` | Export (JSON, TSV) | Both | Partial (TSV implemented) |
+| `reports/` | Export (JSON, TSV) | Both | Implemented (TSV + JSON) |
 | `pipeline/` | Fast/deep lane orchestration | Both | Partial (deep lane implemented) |
 | `cli/` | Click CLI entry points | N/A | Partial |
 
