@@ -32,7 +32,7 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `evidence/` | OpenProt, SynMICdb, ClinVar linking | Deep | Implemented |
 | `ranking/` | Candidate scoring and ranking | Deep | Implemented |
 | `explain/` | LLM narrative explanation + MCP server | Deep | Planned |
-| `reports/` | Export (JSON, TSV) | Both | Partial (TSV implemented) |
+| `reports/` | Export (JSON, TSV) | Both | Implemented (TSV + JSON) |
 | `pipeline/` | Fast/deep lane orchestration | Both | Implemented |
 | `cli/` | Click CLI entry points | N/A | Partial |
 

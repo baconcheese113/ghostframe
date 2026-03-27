@@ -70,6 +70,24 @@ print('SynMICdb:', synmicdb.lookup(v))
 print('ClinVar:', clinvar.lookup(v))
 "
 
+# Reclassify a Silent variant across overlapping ORFs
+uv run --package ghostframe python -c "
+from ghostframe.models import GenomicWindow, NormalizedVariant, ORF
+from ghostframe.reclassify import engine, summary
+
+window = GenomicWindow(chrom='1', start=0, end=9, sequence='ATGAAATTT')
+orf = ORF(frame=1, pos=1, length=9, dna='ATGAAATTT')
+variant = NormalizedVariant(chrom='1', pos=4, ref='A', alt='G', classification='Silent', gene='TEST')
+
+effects = engine.reclassify(variant, [orf], window)
+for e in effects:
+    print(f'Frame {e.orf.frame}: {e.old_class} -> {e.new_class} ({e.ref_aa}->{e.alt_aa})')
+
+s = summary.aggregate(effects)
+print('Counts:', s.counts_by_type)
+print('Sankey:', s.sankey_data)
+"
+
 # Score and rank neoantigen candidates (ranking module)
 uv run --package ghostframe python -c "
 from ghostframe.models import BindingPrediction, DomainHit, EvidenceLookupResult, FrameEffect, ORF, Peptide, ScoredCandidate
