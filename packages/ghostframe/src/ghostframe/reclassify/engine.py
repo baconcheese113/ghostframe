@@ -6,8 +6,8 @@ changes the encoded amino acid in that frame.
 Pipeline position: orfs → [reclassify.engine] → peptides
 """
 
-from ghostframe.genetics import reverse_complement
 from ghostframe.models import ORF, FrameEffect, GenomicWindow, NormalizedVariant
+from ghostframe.orfs.sequence import reverse_complement
 from ghostframe.reclassify import codon_effect
 
 _EFFECT_TO_CLASS: dict[str, str] = {

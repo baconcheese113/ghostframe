@@ -51,3 +51,6 @@ data/references/*.fasta
 # Environment
 .env
 .env.local
+
+# MCP Servers
+.playwright-mcp

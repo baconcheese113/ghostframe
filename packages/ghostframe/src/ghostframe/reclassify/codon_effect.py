@@ -6,8 +6,8 @@ whether the amino acid change is synonymous, missense, or nonsense.
 Pipeline position: reclassify.engine calls [reclassify.codon_effect]
 """
 
-from ghostframe.genetics import CODON_TABLE
 from ghostframe.models import CodonEffect
+from ghostframe.orfs.sequence import CODON_TABLE
 
 
 def compare(ref_codon: str, alt_codon: str) -> CodonEffect:
