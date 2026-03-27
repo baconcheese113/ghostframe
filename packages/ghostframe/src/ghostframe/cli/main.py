@@ -4,12 +4,14 @@ This is the broader CLI for running the GhostFrame analysis pipeline.
 The professor-facing ORF assignment is in cli/orfs.py.
 """
 
+import csv
+import dataclasses
+import json
 from pathlib import Path
 
 import click
 
 from ghostframe.pipeline import fast_lane
-from ghostframe.reports import export
 
 
 @click.group()
@@ -55,7 +57,11 @@ def analyze(maf: Path, fasta: Path | None, min_len: int, output: Path | None) ->
 
     if output is not None:
         if str(output).endswith(".json"):
-            export.to_json(result, output)
+            output.write_text(json.dumps(dataclasses.asdict(result), indent=2), encoding="utf-8")
         else:
-            export.to_tsv(result, output)
+            with output.open("w", newline="") as fh:
+                writer = csv.writer(fh, delimiter="\t")
+                writer.writerow(["frame", "old_class", "new_class", "ref_aa", "alt_aa"])
+                for e in result.reclassified_variants:
+                    writer.writerow([e.orf.frame, e.old_class, e.new_class, e.ref_aa, e.alt_aa])
         click.echo(f"\nResults written to {output}")
