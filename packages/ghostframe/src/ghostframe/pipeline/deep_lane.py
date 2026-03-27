@@ -9,7 +9,6 @@ for batch analysis.
 
 from ghostframe.domain import hmmer
 from ghostframe.evidence import clinvar, openprot, synmicdb
-from ghostframe.genetics import translate
 from ghostframe.mhc.mhcflurry import MHCflurryPredictor
 from ghostframe.models import (
     DeepLaneResult,
@@ -18,6 +17,7 @@ from ghostframe.models import (
     Peptide,
     ScoredCandidate,
 )
+from ghostframe.orfs.sequence import translate
 from ghostframe.peptides.generator import sliding_kmers
 from ghostframe.ranking import ranker, scorer
 
