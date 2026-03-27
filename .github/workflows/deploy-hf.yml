@@ -14,9 +14,15 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - name: Migrate large files to LFS for HF
+        run: |
+          git lfs install
+          git lfs migrate import --no-rewrite --include="*.zip"
+
       - name: Push to HF Spaces
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
           git remote add hf https://user:${HF_TOKEN}@huggingface.co/spaces/baconcheese113/ghostframe
           git push hf master --force
+          git lfs push hf master --all
