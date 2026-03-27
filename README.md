@@ -1,3 +1,13 @@
+---
+title: GhostFrame
+emoji: 👻
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # GhostFrame
 
 A multi-frame variant impact scanner for cancer bioinformatics. GhostFrame re-examines "Silent" somatic mutations across all 6 reading frames to identify hidden non-synonymous effects in overlapping open reading frames (ORFs).
