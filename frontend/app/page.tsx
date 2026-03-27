@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, Suspense, lazy } from 'react';
+import { useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
+import config from '@/lib/config';
 import type { FrameEffect, DemoSummary } from '@/lib/types';
 import { DEMO_VARIANTS, DEMO_SUMMARY, DEMO_SANKEY, DEMO_SEQUENCE } from '@/lib/demo-data';
 
@@ -13,9 +15,9 @@ import DetailRow from '@/components/dashboard/DetailRow';
 import GenomeBrowser from '@/components/dashboard/GenomeBrowser';
 import AnalysisPanel from '@/components/dashboard/AnalysisPanel';
 
-// Heavy 3D components: lazy-loaded to keep initial bundle small
-const DnaBackground = lazy(() => import('@/components/background/DnaBackground'));
-const HelixExplorer = lazy(() => import('@/components/dashboard/HelixExplorer'));
+// Heavy 3D components: SSR disabled — Three.js requires browser WebGL APIs
+const DnaBackground = dynamic(() => import('@/components/background/DnaBackground'), { ssr: false });
+const HelixExplorer = dynamic(() => import('@/components/dashboard/HelixExplorer'), { ssr: false });
 
 const EMPTY_SUMMARY: DemoSummary = {
   total_silent: 0,
@@ -76,7 +78,7 @@ export default function DashboardPage() {
     setApiError(null);
 
     try {
-      const res = await fetch('http://localhost:8000/api/analyze', {
+      const res = await fetch(`${config.apiUrl}/api/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

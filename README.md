@@ -6,7 +6,7 @@ A multi-frame variant impact scanner for cancer bioinformatics. GhostFrame re-ex
 
 A "Silent" mutation in standard cancer annotations means the canonical protein sequence is unchanged. But in regions where multiple ORFs overlap, the same nucleotide change may be missense or stop-gained in an alternative reading frame. GhostFrame scans all 6 frames, finds these hidden effects, and prioritizes the resulting mutant peptides as noncanonical neoantigen candidates.
 
-**Output:** Interactive dashboard with Sankey reclassification flow, variant table, 3D frame explorer, and MHC binding scores. Also exports JSON/TSV for downstream use.
+**Output:** Interactive dashboard with Sankey reclassification flow, variant table, 3D frame explorer, and MHC binding scores (see [frontend/README.md](frontend/README.md)). Also exports JSON/TSV for downstream use.
 
 > **Research/educational use only. Not for clinical decision-making.**
 
@@ -21,7 +21,15 @@ git clone <repo-url>
 cd ghostframe
 uv sync
 
-# Run the ORF finder on the HPV16 demo
+# Start the API server
+uv run --package ghostframe-api uvicorn ghostframe_api.app:app --reload
+
+# Start the Next.js frontend (in a separate terminal)
+cd frontend
+npm install
+npm run dev   # http://localhost:3000
+
+# Run the ORF finder CLI on the HPV16 demo
 uv run --package ghostframe orfs data/demo/hpv16_k02718.fasta --min-len 50
 
 # Fetch a sequence region from a local FASTA (seqfetch)
@@ -79,9 +87,6 @@ print(f'Top score: {result.ranked_candidates[0].score:.3f}')
 
 # Run tests
 uv run pytest
-
-# Start the API server
-uv run --package ghostframe-api uvicorn ghostframe_api.app:app --reload
 ```
 
 ## Project layout
@@ -107,7 +112,7 @@ ghostframe/
   tests/                  # Test suite (mirrors source structure)
   data/demo/              # Sample data and expected outputs
   docs/                   # Architecture documentation
-  frontend/               # Next.js frontend (placeholder)
+  frontend/               # Next.js frontend — see frontend/README.md
 ```
 
 ## Pipeline architecture
