@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "knip": "knip",
-    "postinstall": "node -e \"const fs=require('fs');fs.copyFileSync('node_modules/igv/dist/igv.min.js','public/igv.min.js')\""
+    "knip": "knip"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

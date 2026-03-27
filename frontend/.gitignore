@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# generated public assets (sourced from npm deps or data/demo/)
-/public/igv.min.js
+# generated public assets (sourced from data/demo/)
+# igv.min.js committed directly — postinstall removed for Vercel compatibility
 /public/hpv16_k02718.fasta
 /public/hpv16_k02718.fasta.fai
