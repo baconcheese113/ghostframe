@@ -75,7 +75,7 @@ STOP_CODONS = {"TAA", "TAG", "TGA"}
 
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
 
-
+# Author: Melaku Ashenafi
 def reverse_complement(seq: str) -> str:
     """Return the reverse complement of a DNA sequence.
 
@@ -103,7 +103,7 @@ def reverse_complement(seq: str) -> str:
 
     return rev_comp
 
-
+# Author: Melaku Ashenafi
 def translate(dna: str) -> str:
     """Translate a DNA sequence to a protein sequence using the standard genetic code.
 
