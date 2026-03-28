@@ -1,3 +1,13 @@
+---
+title: GhostFrame
+emoji: 👻
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # GhostFrame
 
 A multi-frame variant impact scanner for cancer bioinformatics. GhostFrame re-examines "Silent" somatic mutations across all 6 reading frames to identify hidden non-synonymous effects in overlapping open reading frames (ORFs).
@@ -6,7 +16,7 @@ A multi-frame variant impact scanner for cancer bioinformatics. GhostFrame re-ex
 
 A "Silent" mutation in standard cancer annotations means the canonical protein sequence is unchanged. But in regions where multiple ORFs overlap, the same nucleotide change may be missense or stop-gained in an alternative reading frame. GhostFrame scans all 6 frames, finds these hidden effects, and prioritizes the resulting mutant peptides as noncanonical neoantigen candidates.
 
-**Output:** Interactive dashboard with Sankey reclassification flow, variant table, 3D frame explorer, and MHC binding scores. Also exports JSON/TSV for downstream use.
+**Output:** Interactive dashboard with Sankey reclassification flow, variant table, 3D frame explorer, and MHC binding scores (see [frontend/README.md](frontend/README.md)). Also exports JSON/TSV for downstream use.
 
 > **Research/educational use only. Not for clinical decision-making.**
 
@@ -21,7 +31,15 @@ git clone <repo-url>
 cd ghostframe
 uv sync
 
-# Run the ORF finder on the HPV16 demo
+# Start the API server
+uv run --package ghostframe-api uvicorn ghostframe_api.app:app --reload
+
+# Start the Next.js frontend (in a separate terminal)
+cd frontend
+npm install
+npm run dev   # http://localhost:3000
+
+# Run the ORF finder CLI on the HPV16 demo
 uv run --package ghostframe orfs data/demo/hpv16_k02718.fasta --min-len 50
 
 # Fetch a sequence region from a local FASTA (seqfetch)
@@ -29,6 +47,21 @@ uv run --package ghostframe python -c "
 from ghostframe.seqfetch import local
 print(local.fetch('K02718.1', 0, 100, 'data/demo/hpv16_k02718.fasta'))
 "
+
+# Reclassify a variant across all 6 reading frames
+uv run --package ghostframe python -c "
+from ghostframe.models import NormalizedVariant, GenomicWindow, ORF
+from ghostframe.reclassify import engine, summary
+
+window = GenomicWindow(chrom='chr1', start=0, end=9, sequence='ATGACGTTT')
+orfs = [ORF(frame=1, pos=1, length=9, dna='ATGACGTTT')]
+variant = NormalizedVariant(chrom='chr1', pos=4, ref='A', alt='T', classification='Silent', gene='DEMO')
+effects = engine.reclassify(variant, orfs, window)
+print(summary.aggregate(effects))
+"
+
+# Run the fast lane pipeline on the HPV16 demo MAF
+uv run --package ghostframe ghostframe analyze data/demo/sample.maf --fasta data/demo/hpv16_k02718.fasta
 
 # Annotate a protein sequence against Pfam via EMBL-EBI HMMER (domain module)
 uv run --package ghostframe python -c "
@@ -45,6 +78,24 @@ from ghostframe.evidence import clinvar, synmicdb
 v = NormalizedVariant(chrom='17', pos=7675994, ref='G', alt='T', classification='Silent', gene='TP53')
 print('SynMICdb:', synmicdb.lookup(v))
 print('ClinVar:', clinvar.lookup(v))
+"
+
+# Reclassify a Silent variant across overlapping ORFs
+uv run --package ghostframe python -c "
+from ghostframe.models import GenomicWindow, NormalizedVariant, ORF
+from ghostframe.reclassify import engine, summary
+
+window = GenomicWindow(chrom='1', start=0, end=9, sequence='ATGAAATTT')
+orf = ORF(frame=1, pos=1, length=9, dna='ATGAAATTT')
+variant = NormalizedVariant(chrom='1', pos=4, ref='A', alt='G', classification='Silent', gene='TEST')
+
+effects = engine.reclassify(variant, [orf], window)
+for e in effects:
+    print(f'Frame {e.orf.frame}: {e.old_class} -> {e.new_class} ({e.ref_aa}->{e.alt_aa})')
+
+s = summary.aggregate(effects)
+print('Counts:', s.counts_by_type)
+print('Sankey:', s.sankey_data)
 "
 
 # Score and rank neoantigen candidates (ranking module)
@@ -79,9 +130,6 @@ print(f'Top score: {result.ranked_candidates[0].score:.3f}')
 
 # Run tests
 uv run pytest
-
-# Start the API server
-uv run --package ghostframe-api uvicorn ghostframe_api.app:app --reload
 ```
 
 ## Project layout
@@ -94,20 +142,20 @@ ghostframe/
         orfs/             # 6-frame ORF scanner (implemented)
         variants/         # MAF/VCF intake (implemented)
         seqfetch/         # Reference sequence retrieval (implemented)
-        reclassify/       # Multi-frame reclassification (stubbed)
+        reclassify/       # Multi-frame reclassification (implemented)
         peptides/         # Kmer generation (implemented)
         mhc/              # MHC binding prediction (implemented)
         domain/           # Pfam domain annotation via EMBL-EBI HMMER (implemented)
         evidence/         # External evidence linking (implemented)
         ranking/          # Candidate scoring and ranking (implemented)
         reports/          # Output generation (TSV + JSON implemented)
-        pipeline/         # Orchestration (deep lane implemented; fast lane stubbed)
+        pipeline/         # Orchestration (fast lane + deep lane implemented)
         cli/              # CLI entry points
     ghostframe-api/       # FastAPI server
   tests/                  # Test suite (mirrors source structure)
   data/demo/              # Sample data and expected outputs
   docs/                   # Architecture documentation
-  frontend/               # Next.js frontend (placeholder)
+  frontend/               # Next.js frontend — see frontend/README.md
 ```
 
 ## Pipeline architecture
