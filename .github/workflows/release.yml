@@ -8,16 +8,32 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # push version bump commit + create GitHub Release
+  contents: write  # create GitHub Release
   id-token: write  # PyPI OIDC trusted publishing
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-release-${{ github.ref_name }}
+      cancel-in-progress: false
+
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0  # PSR needs full history to read commits since last tag
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      # Forward deploy key into SSH agent so PSR can push past branch protection
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Configure git
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
       - uses: astral-sh/setup-uv@v7
         with:
@@ -27,11 +43,9 @@ jobs:
 
       - name: Python Semantic Release
         id: release
-        uses: python-semantic-release/python-semantic-release@v10
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          git_committer_name: "github-actions[bot]"
-          git_committer_email: "github-actions[bot]@users.noreply.github.com"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: uv run semantic-release -vv version
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
