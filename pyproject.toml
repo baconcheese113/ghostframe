@@ -7,7 +7,7 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "ghostframe",
+    "ghostframe[mhc]",
     "ghostframe-api",
     "pytest>=8.0",
     "pytest-cov>=6.0",
