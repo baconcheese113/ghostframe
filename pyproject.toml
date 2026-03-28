@@ -39,14 +39,14 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "RUF"]
 [tool.semantic_release]
 version_toml = ["packages/ghostframe/pyproject.toml:project.version"]
 tag_format = "v{version}"
-build_command = "uv build --package ghostframe"
+build_command = "pip install build && python -m build packages/ghostframe"
 commit_message = "chore(release): v{version} [skip ci]"
 
 [tool.semantic_release.branches.master]
 match = "master"
 prerelease = false
 
-[tool.semantic_release.changelog]
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
 
 [tool.pytest.ini_options]
