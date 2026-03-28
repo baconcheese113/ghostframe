@@ -5,6 +5,7 @@ on:
     branches: [master]
     paths:
       - packages/ghostframe/**
+  workflow_dispatch:
 
 permissions:
   contents: write  # push version bump commit + create GitHub Release
