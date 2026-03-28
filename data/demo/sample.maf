@@ -1,0 +1,4 @@
+#version 2.4
+Hugo_Symbol	Chromosome	Start_Position	Reference_Allele	Tumor_Seq_Allele2	Variant_Classification
+E6	K02718.1	500	A	G	Silent
+E7	K02718.1	700	C	T	Silent

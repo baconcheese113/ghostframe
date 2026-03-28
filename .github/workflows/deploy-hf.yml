@@ -1,0 +1,28 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Migrate large files to LFS for HF
+        run: |
+          git lfs install
+          git lfs migrate import --include="*.zip" --include-ref=refs/heads/master
+
+      - name: Push to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git remote add hf https://user:${HF_TOKEN}@huggingface.co/spaces/baconcheese113/ghostframe
+          git push hf master:main --force
+          git lfs push hf master --all

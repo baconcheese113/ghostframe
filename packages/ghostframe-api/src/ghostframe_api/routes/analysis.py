@@ -1,11 +1,11 @@
 """Analysis endpoints — submit jobs and retrieve results."""
 
 import uuid
-from pathlib import Path
 
 from fastapi import APIRouter
 
 from ghostframe.orfs import find_orfs, parse_file
+from ghostframe_api.config import Settings
 from ghostframe_api.schemas import (
     AnalysisRequest,
     AnalysisResponse,
@@ -13,8 +13,7 @@ from ghostframe_api.schemas import (
 )
 
 router = APIRouter()
-
-_DEMO_FASTA = Path(__file__).parents[6] / "data" / "demo" / "hpv16_k02718.fasta"
+_settings = Settings()
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
@@ -35,7 +34,7 @@ async def start_analysis(request: AnalysisRequest) -> AnalysisResponse:
                 seq_lines = lines
             sequence = "".join(line.strip().upper() for line in seq_lines if line.strip())
         else:
-            records = parse_file(_DEMO_FASTA)
+            records = parse_file(_settings.demo_fasta)
             sequence = records[0].sequence
             label = records[0].id
         steps.append(
