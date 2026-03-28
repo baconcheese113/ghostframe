@@ -75,6 +75,7 @@ STOP_CODONS = {"TAA", "TAG", "TGA"}
 
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
 
+
 def reverse_complement(seq: str) -> str:
     """Return the reverse complement of a DNA sequence.
 
@@ -102,9 +103,6 @@ def reverse_complement(seq: str) -> str:
 
     return rev_comp
 
-    seq = seq.upper()
-    return seq.translate(_COMPLEMENT)[::-1]
-
 
 def translate(dna: str) -> str:
     """Translate a DNA sequence to a protein sequence using the standard genetic code.
@@ -129,16 +127,17 @@ def translate(dna: str) -> str:
 
     # Raise error if the sequence cannot be divided into codons
     if (len(dna) % 3) != 0:
-        raise ValueError ("not a multiple of 3")
+        raise ValueError("not a multiple of 3")
 
     # Create protein string iterated by a for loop comparing codons to amino acids
-    protein = []
-    for i in range(0,len(dna),3):
-        codon = dna[i:i+3]
+    protein_chars: list[str] = []
+    for i in range(0, len(dna), 3):
+        codon = dna[i : i + 3]
 
         if codon in STOP_CODONS:
-            protein.append("*")
+            protein_chars.append("*")
         else:
-            protein.append(CODON_TABLE.get(codon.upper(), 'X'))
+            aa = CODON_TABLE.get(codon, "X")
+            protein_chars.append(aa)
 
-    return "".join(protein)
+    return "".join(protein_chars)

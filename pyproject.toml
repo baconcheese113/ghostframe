@@ -15,7 +15,6 @@ dev = [
     "pandas-stubs>=2.0",
     "pyright>=1.1",
     "pre-commit>=4.0",
-    "pyright>=1.1.408",
 ]
 
 [tool.uv.sources]
@@ -35,6 +34,10 @@ src = ["packages/ghostframe/src", "packages/ghostframe-api/src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
