@@ -26,7 +26,7 @@ jobs:
           fetch-depth: 0
 
       # Forward deploy key into SSH agent so PSR can push past branch protection
-      - uses: webfactory/ssh-agent@v0.9.0
+      - uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 

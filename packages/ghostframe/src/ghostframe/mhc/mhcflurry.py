@@ -5,9 +5,14 @@ Wraps the MHCflurry open-source MHC-I binding predictor.
 Pipeline position: peptides → [mhc.mhcflurry] → reports
 """
 
-import numpy as np
-import torch
-from mhcflurry import Class1PresentationPredictor  # type: ignore[import-untyped]
+try:
+    import numpy as np
+    import torch
+    from mhcflurry import Class1PresentationPredictor  # type: ignore[import-untyped]
+except ImportError as _e:
+    raise ImportError(
+        "MHC prediction requires the 'mhc' extra: pip install 'ghostframe[mhc]'"
+    ) from _e
 
 from ghostframe.mhc.base import MHCPredictor
 from ghostframe.models import BindingPrediction, Peptide
