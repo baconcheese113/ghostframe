@@ -3,6 +3,12 @@ name: Deploy to Hugging Face Spaces
 on:
   push:
     branches: [master]
+    paths:
+      - packages/ghostframe/**
+      - packages/ghostframe-api/**
+      - Dockerfile
+      - pyproject.toml
+      - uv.lock
   workflow_dispatch:
 
 jobs:
