@@ -8,7 +8,8 @@ from pathlib import Path
 
 from ghostframe.models import FastaRecord
 
-# Author name: Joshua Green 
+
+# Author name: Joshua Green
 def parse_file(path: Path | str) -> list[FastaRecord]:
     """Parse a FASTA file from a filesystem path.
 
