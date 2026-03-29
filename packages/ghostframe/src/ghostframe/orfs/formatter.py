@@ -16,7 +16,7 @@ from ghostframe.models import ORF, FastaRecord
 
 CODONS_PER_LINE = 15
 
-Author name: Joshua Green
+# Author name: Joshua Green
 def format_orf(record: FastaRecord, orf: ORF) -> str:
     """Format a single ORF in the assignment's FASTA-style output.
 
