@@ -7,7 +7,7 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "ghostframe",
+    "ghostframe[mhc]",
     "ghostframe-api",
     "pytest>=8.0",
     "pytest-cov>=6.0",
@@ -41,13 +41,20 @@ version_toml = ["packages/ghostframe/pyproject.toml:project.version"]
 tag_format = "v{version}"
 build_command = "uv build --package ghostframe"
 commit_message = "chore(release): v{version} [skip ci]"
+no_git_verify = true
 
 [tool.semantic_release.branches.master]
 match = "master"
 prerelease = false
 
-[tool.semantic_release.changelog]
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
+
+[tool.semantic_release.remote]
+name = "origin"
+type = "github"
+token = { env = "GITHUB_TOKEN" }
+ignore_token_for_push = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
