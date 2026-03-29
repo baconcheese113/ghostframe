@@ -1,5 +1,5 @@
-"""FASTA file parser.
-
+"""Author name: Joshua Green
+FASTA file parser.
 Handles multi-sequence files, sequences split across lines,
 whitespace within sequences, and mixed case normalization.
 """
