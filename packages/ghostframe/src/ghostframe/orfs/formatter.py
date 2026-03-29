@@ -16,7 +16,7 @@ from ghostframe.models import ORF, FastaRecord
 
 CODONS_PER_LINE = 15
 
-
+Author name: Joshua Green
 def format_orf(record: FastaRecord, orf: ORF) -> str:
     """Format a single ORF in the assignment's FASTA-style output.
 
@@ -35,7 +35,7 @@ def format_orf(record: FastaRecord, orf: ORF) -> str:
         - The last line may have fewer than 15 codons.
     """
     header = f">{record.description} | FRAME = {orf.frame} POS = {orf.pos} LEN = {orf.length}"
-
+# split the ORF DNA into codons and format lines
     codons = [orf.dna[i : i + 3] for i in range(0, len(orf.dna), 3)]
     sequence_lines = [
         " ".join(codons[i : i + CODONS_PER_LINE]) for i in range(0, len(codons), CODONS_PER_LINE)
@@ -43,7 +43,7 @@ def format_orf(record: FastaRecord, orf: ORF) -> str:
 
     return "\n".join([header, *sequence_lines])
 
-
+# Author name: Joshua Green
 def format_all_orfs(record: FastaRecord, orfs: list[ORF]) -> str:
     """Format all ORFs for a single FASTA record.
 
@@ -62,5 +62,5 @@ def format_all_orfs(record: FastaRecord, orfs: list[ORF]) -> str:
     """
     if not orfs:
         return ""
-
+# format each ORF and join with newlines
     return "\n".join(format_orf(record, orf) for orf in orfs)
