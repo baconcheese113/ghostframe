@@ -1,4 +1,5 @@
-"""6-frame ORF scanning engine.
+"""Author name: Joshua Green
+6-frame ORF scanning engine.
 
 Finds all maximal open reading frames (ATG to stop codon) across all 6 reading
 frames of a DNA sequence. Frames 1-3 scan the forward strand at offsets 0/1/2.
