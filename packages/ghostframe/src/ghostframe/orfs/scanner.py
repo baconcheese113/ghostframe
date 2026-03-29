@@ -12,7 +12,7 @@ min_length bases are excluded.
 from ghostframe.models import ORF
 from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement
 
-Aurthor name: Joshua Green
+# Aurthor name: Joshua Green
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
     """Find all ORFs across all 6 reading frames.
 
