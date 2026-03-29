@@ -9,32 +9,17 @@ An ORF is maximal: it starts at ATG and extends to the first in-frame stop codon
 min_length bases are excluded.
 """
 
-from ghostframe.models import ORF
-from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement
+from ghostframe.models import ORF  # Import ORF data structure
+from ghostframe.orfs.sequence import STOP_CODONS, reverse_complement  # Import stop codons and reverse complement function
 
-
+# Author name: Joshua Green
 def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
-    """Find all ORFs across all 6 reading frames.
 
-    Args:
-        sequence: DNA string (will be uppercased internally).
-        min_length: Minimum ORF length in bases. Default is 50.
+    sequence = sequence.upper()  # Normalize sequence to uppercase
+    original_seq_len = len(sequence)  # Store original sequence length
+    results: list[ORF] = []  # List to collect all ORFs
 
-    Returns:
-        List of ORF objects ordered by frame (1-6) then by position.
-
-    Hints:
-        - Uppercase the input sequence.
-        - Frames 1-3 scan the forward strand at offsets 0, 1, 2.
-        - Frames 4-6 scan the reverse complement at offsets 0, 1, 2.
-        - Use reverse_complement() to get the reverse strand.
-        - Delegate each frame to find_orfs_in_frame().
-        - Results must be ordered by frame number (1-6), then by position.
-    """
-    sequence = sequence.upper()
-    original_seq_len = len(sequence)
-    results: list[ORF] = []
-
+    # Scan forward strand (frames 1–3)
     for frame in range(1, 4):
         results.extend(
             find_orfs_in_frame(
@@ -45,7 +30,10 @@ def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
             )
         )
 
+    # Get reverse complement for reverse frames
     rev_seq = reverse_complement(sequence)
+
+    # Scan reverse strand (frames 4–6)
     for frame in range(4, 7):
         results.extend(
             find_orfs_in_frame(
@@ -56,80 +44,67 @@ def find_orfs(sequence: str, min_length: int = 50) -> list[ORF]:
             )
         )
 
+    # Sort ORFs by frame, then by position
     return sorted(results, key=lambda orf: (orf.frame, orf.pos))
 
 
+# Author name: Joshua Green
 def find_orfs_in_frame(
     sequence: str,
     frame: int,
     min_length: int,
     original_seq_len: int | None = None,
 ) -> list[ORF]:
-    """Find all maximal ORFs in a single reading frame.
 
-    This is the inner loop of the scanner. It walks triplets from the frame
-    offset, finds ATG start codons, and reads until the first in-frame stop.
+    sequence = sequence.upper()  # Ensure sequence is uppercase
 
-    Args:
-        sequence: DNA string (already forward or reverse-complemented).
-        frame: Frame number (1-6). Frames 1-3 are forward, 4-6 are reverse.
-        min_length: Minimum ORF length in bases.
-        original_seq_len: Length of the original (non-complemented) sequence.
-            Required for computing reverse-frame positions. If None, uses
-            len(sequence).
-
-    Returns:
-        List of ORF objects for this frame, ordered by position.
-
-    Hints:
-        - The frame offset is (frame - 1) % 3.
-        - Walk the sequence in steps of 3 starting from the offset.
-        - When you find ATG, scan forward (in triplets) for a stop codon.
-        - An ORF is maximal: first ATG to first in-frame stop. If multiple ATGs
-          precede the same stop, the ORF starts at the first ATG.
-        - The stop codon IS included in the ORF length and DNA.
-        - If no stop codon is found before the sequence ends, it's not a valid ORF.
-        - After finding a stop, continue scanning from after the stop codon.
-        - Use _compute_position() for the reported position.
-        - Only include ORFs with length >= min_length.
-    """
-    sequence = sequence.upper()
+    # Use sequence length if original not provided
     if original_seq_len is None:
         original_seq_len = len(sequence)
 
-    offset = (frame - 1) % 3
-    is_reverse = frame >= 4
-    orfs: list[ORF] = []
+    offset = (frame - 1) % 3  # Determine frame offset (0,1,2)
+    is_reverse = frame >= 4  # Check if this is a reverse frame
+    orfs: list[ORF] = []  # Store ORFs found in this frame
 
-    i = offset
+    i = offset  # Start scanning from frame offset
+
+    # Loop through sequence in steps of 3 (codons)
     while i <= len(sequence) - 3:
-        codon = sequence[i : i + 3]
+        codon = sequence[i : i + 3]  # Get current codon
 
+        # If not a start codon, move to next codon
         if codon != "ATG":
             i += 3
             continue
 
-        stop_idx = None
-        j = i + 3
+        stop_idx = None  # Initialize stop position
+        j = i + 3  # Start scanning after ATG
+
+        # Scan forward for stop codon
         while j <= len(sequence) - 3:
             next_codon = sequence[j : j + 3]
-            if next_codon in STOP_CODONS:
+            if next_codon in STOP_CODONS:  # Check if stop codon
                 stop_idx = j
                 break
             j += 3
 
+        # If no stop codon found, stop scanning
         if stop_idx is None:
             break
 
+        # Extract ORF DNA including stop codon
         orf_dna = sequence[i : stop_idx + 3]
         orf_length = len(orf_dna)
 
+        # Only keep ORFs that meet minimum length
         if orf_length >= min_length:
             position = _compute_position(
                 orf_start_idx=i,
                 is_reverse=is_reverse,
                 original_seq_len=original_seq_len,
             )
+
+            # Create ORF object and add to list
             orfs.append(
                 ORF(
                     frame=frame,
@@ -139,9 +114,10 @@ def find_orfs_in_frame(
                 )
             )
 
+        # Move index to after stop codon (continue scanning)
         i = stop_idx + 3
 
-    return orfs
+    return orfs  # Return ORFs found in this frame
 
 
 def _compute_position(  # type: ignore
@@ -149,13 +125,10 @@ def _compute_position(  # type: ignore
     is_reverse: bool,
     original_seq_len: int,
 ) -> int:
-    """Compute the reported position for an ORF.
 
-    Forward frames: POS = 1-based index (orf_start_idx + 1).
-    Reverse frames: POS = -(orf_start_idx + 1), representing position from
-    the right end of the original sequence (rightmost base is -1).
-    """
+    # Forward strand: position is 1-based index
     if not is_reverse:
         return orf_start_idx + 1
 
+    # Reverse strand: negative position from right end
     return -(orf_start_idx + 1)
