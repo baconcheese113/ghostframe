@@ -4,77 +4,70 @@ Handles multi-sequence files, sequences split across lines,
 whitespace within sequences, and mixed case normalization.
 """
 
-from pathlib import Path
+from pathlib import Path  # Used to handle file paths in an OS-independent way
 
-from ghostframe.models import FastaRecord
+from ghostframe.models import FastaRecord  # Import the data structure for storing FASTA records
 
-
+# Author name: Joshua Green
 def parse_file(path: Path | str) -> list[FastaRecord]:
-    """Parse a FASTA file from a filesystem path.
+    """Parse a FASTA file from a filesystem path."""
+    
+    path = Path(path)  # Ensure the input is converted to a Path object
 
-    Args:
-        path: Path to a FASTA file.
-
-    Returns:
-        List of FastaRecord objects with sequences normalized to uppercase.
-
-    Hints:
-        - Read the file and delegate to parse_text().
-    """
-    path = Path(path)
-
+    # Open the file in read mode with UTF-8 encoding
     with path.open("r", encoding="utf-8") as f:
-        text = f.read()
+        text = f.read()  # Read entire file content as a string
 
-    return parse_text(text)
+    return parse_text(text)  # Delegate parsing logic to parse_text()
 
 
+# Author name: Joshua Green
 def parse_text(text: str) -> list[FastaRecord]:
-    """Parse FASTA from a raw string.
+    """Parse FASTA from a raw string."""
+    
+    records: list[FastaRecord] = []  # List to store parsed FASTA records
+    header: str | None = None  # Stores current header line (without '>')
+    sequence_lines: list[str] = []  # Stores sequence lines for current record
 
-    Args:
-        text: Raw FASTA-formatted string.
-
-    Returns:
-        List of FastaRecord objects with sequences normalized to uppercase.
-
-    Hints:
-        - Lines starting with '>' are headers; everything else is sequence data.
-        - The record ID is the first whitespace-delimited token of the header.
-        - The description is the full header (everything after '>').
-        - Sequence lines may be split across multiple lines — concatenate them.
-        - Strip whitespace from sequence lines and normalize to uppercase.
-        - Empty lines between sequences should be ignored.
-        - Text with no '>' headers should return an empty list.
-    """
-    records: list[FastaRecord] = []
-    header: str | None = None
-    sequence_lines: list[str] = []
-
+    # Iterate through each line in the input text
     for line in text.splitlines():
-        line = line.strip()
+        line = line.strip()  # Remove leading/trailing whitespace
 
         if not line:
-            continue  # skip empty lines
+            continue  # Skip empty lines
 
         if line.startswith(">"):
-            # Save previous record if exists
+            # If we encounter a new header, save the previous record first
             if header is not None:
+                # Join sequence lines, remove spaces, and convert to uppercase
                 sequence = "".join(sequence_lines).replace(" ", "").upper()
+                
+                # Extract record ID (first token in header)
                 record_id = header.split()[0]
-                records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
+                
+                # Create and store the FastaRecord object
+                records.append(FastaRecord(
+                    id=record_id,
+                    description=header,
+                    sequence=sequence
+                ))
 
-            # Start new record
-            header = line[1:].strip()
-            sequence_lines = []
+            # Start a new record
+            header = line[1:].strip()  # Remove '>' and store header
+            sequence_lines = []  # Reset sequence accumulator
+
         else:
-            # Accumulate sequence lines
+            # If not a header, this line is part of the sequence
             sequence_lines.append(line)
 
-    # Add last record
+    # After loop ends, add the final record (if any)
     if header is not None:
         sequence = "".join(sequence_lines).replace(" ", "").upper()
         record_id = header.split()[0]
-        records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
+        records.append(FastaRecord(
+            id=record_id,
+            description=header,
+            sequence=sequence
+        ))
 
-    return records
+    return records  # Return list of parsed FASTA records
