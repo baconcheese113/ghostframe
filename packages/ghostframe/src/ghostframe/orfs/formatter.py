@@ -1,4 +1,5 @@
-"""ORF output formatting per the professor's assignment spec.
+"""Author name: Joshua Green
+ORF output formatting per the professor's assignment spec.
 
 Output format:
     >original_header | FRAME = N POS = P LEN = L
