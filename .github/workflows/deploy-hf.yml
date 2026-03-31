@@ -23,7 +23,7 @@ jobs:
       - name: Migrate large files to LFS for HF
         run: |
           git lfs install
-          git lfs migrate import --include="*.zip" --include-ref=refs/heads/master
+          git lfs migrate import --include="*.zip,*.png" --include-ref=refs/heads/master
 
       - name: Push to HF Spaces
         env:
