@@ -56,7 +56,7 @@ export default function AnalysisPanel({
       >
         <div className="flex items-center gap-2">
           <span className="font-data text-[11px] font-bold" style={{ color: accent, opacity: open ? 1 : 0.5 }}>
-            {open ? '−' : '+'}
+            {open ? '-' : '+'}
           </span>
           <span className="font-display text-xs font-semibold">
             {open ? 'New Analysis' : 'Configure New Analysis'}

@@ -184,6 +184,9 @@ uv run pytest -m golden          # run golden output tests
 uv run ruff check .              # lint
 uv run ruff format .             # format
 uv run pyright                   # type check
+cd frontend && npm run lint      # frontend lint
+cd frontend && npm run knip      # frontend unused-code check
+cd frontend && npm run build     # frontend production build
 ```
 
 ## Team

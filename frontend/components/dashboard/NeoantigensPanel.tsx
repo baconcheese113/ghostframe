@@ -1,5 +1,12 @@
 import type { DeepLaneEnrichment, FrameEffect } from '@/lib/types';
 
+type DisplayCandidate = NonNullable<DeepLaneEnrichment['candidates']>[number] & {
+  peptide_sequence: string;
+  allele: string;
+  ic50: number;
+  rank: number;
+};
+
 interface NeoantigensPanelProps {
   variant: FrameEffect;
   enrichment: DeepLaneEnrichment | null;
@@ -23,22 +30,27 @@ function currentHlaLabel(hlaAlleles: string[]): string {
   return hlaAlleles.length > 0 ? hlaAlleles.join(', ') : 'HLA-A*02:01';
 }
 
+function hasDisplayBindingCandidate(
+  candidate: DeepLaneEnrichment['candidates'][number],
+): candidate is DisplayCandidate {
+  return (
+    typeof candidate.peptide_sequence === 'string' &&
+    typeof candidate.allele === 'string' &&
+    typeof candidate.ic50 === 'number' &&
+    Number.isFinite(candidate.ic50) &&
+    candidate.ic50 > 0 &&
+    typeof candidate.rank === 'number' &&
+    Number.isFinite(candidate.rank)
+  );
+}
+
 export default function NeoantigensPanel({
   variant,
   enrichment,
   isEnriching = false,
   hlaAlleles = [],
 }: NeoantigensPanelProps) {
-  const deepCandidates = (enrichment?.candidates ?? []).filter(
-    (candidate) =>
-      typeof candidate.peptide_sequence === 'string' &&
-      typeof candidate.allele === 'string' &&
-      typeof candidate.ic50 === 'number' &&
-      Number.isFinite(candidate.ic50) &&
-      candidate.ic50 > 0 &&
-      typeof candidate.rank === 'number' &&
-      Number.isFinite(candidate.rank),
-  );
+  const deepCandidates = (enrichment?.candidates ?? []).filter(hasDisplayBindingCandidate);
   const hasDeepCandidates = deepCandidates.length > 0;
   const hasDeepNoBinderState = Boolean(enrichment) && !hasDeepCandidates;
   const hasFastPeptides = variant.peptides.length > 0;

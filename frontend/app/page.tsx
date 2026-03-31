@@ -10,6 +10,7 @@ import type {
   DeepLaneEnrichment,
   DemoSummary,
   FrameEffect,
+  PeptidePrediction,
   VariantProcessingStatus,
 } from '@/lib/types';
 
@@ -47,6 +48,13 @@ const EMPTY_ANALYSIS_META: AnalysisMeta = {
 
 const DEFAULT_HLA_ALLELES = ['HLA-A*02:01'];
 
+type ScoredDeepLaneCandidate = DeepLaneCandidate & {
+  peptide_sequence: string;
+  allele: string;
+  ic50: number;
+  rank: number;
+};
+
 function upsertStep(steps: ApiStep[] | undefined, nextStep: ApiStep): ApiStep[] {
   const existing = steps ?? [];
   const index = existing.findIndex((step) => step.name === nextStep.name);
@@ -63,7 +71,7 @@ function normalizeTier(tier: number | null | undefined): 1 | 2 | 3 {
   return 1;
 }
 
-function isScoredCandidate(candidate: DeepLaneCandidate): boolean {
+function isScoredCandidate(candidate: DeepLaneCandidate): candidate is ScoredDeepLaneCandidate {
   return (
     typeof candidate.peptide_sequence === 'string' &&
     candidate.peptide_sequence.length > 0 &&
@@ -82,7 +90,14 @@ function mergeEnrichmentIntoVariants(
   variantId: string,
   enrichment: DeepLaneEnrichment,
 ): FrameEffect[] {
-  const scoredCandidates = enrichment.candidates.filter(isScoredCandidate);
+  const scoredCandidates: PeptidePrediction[] = enrichment.candidates
+    .filter(isScoredCandidate)
+    .map((candidate) => ({
+      sequence: candidate.peptide_sequence,
+      allele: candidate.allele,
+      ic50: candidate.ic50,
+      rank: candidate.rank,
+    }));
 
   return variants.map((variant) => {
     if (variant.id !== variantId) {
@@ -94,12 +109,7 @@ function mergeEnrichmentIntoVariants(
       evidence_tier: normalizeTier(enrichment.evidence?.tier),
       synmicdb_score: enrichment.evidence?.synmicdb_score ?? null,
       clinvar_significance: enrichment.evidence?.clinvar_significance ?? null,
-      peptides: scoredCandidates.map((candidate) => ({
-        sequence: candidate.peptide_sequence,
-        allele: candidate.allele,
-        ic50: candidate.ic50,
-        rank: candidate.rank,
-      })),
+      peptides: scoredCandidates,
     };
   });
 }

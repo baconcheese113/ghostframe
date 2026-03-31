@@ -270,7 +270,17 @@ export default function LandingExplainer() {
         </div>
       )}
 
-    <div data-testid="landing-explainer" className="flex flex-col gap-3">
+    <div data-testid="empty-state-explainer" className="flex flex-col gap-3">
+      <div
+        className="glass rounded-xl px-4 py-3"
+        style={{ borderColor: 'rgba(34,211,238,0.16)' }}
+      >
+        <p className="font-data text-[11px] leading-relaxed" style={{ color: '#94a3b8' }}>
+          GhostFrame revisits mutations labeled &quot;Silent&quot; and checks whether they change
+          amino acids in overlapping reading frames, exposing hidden ORF effects and potential
+          neoantigen candidates.
+        </p>
+      </div>
 
       {/* ── Codon wheel — standalone hero, outside any card ────────────── */}
       <div className="flex flex-col lg:flex-row items-center gap-6 px-2 py-2">

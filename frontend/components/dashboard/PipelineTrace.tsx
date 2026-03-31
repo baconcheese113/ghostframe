@@ -106,7 +106,9 @@ function computeProgressState(opts: {
     };
   }
 
-  const ratio = clamp(opts.runningProgressCurrent / opts.runningProgressTotal, 0, 1);
+  const progressCurrent = opts.runningProgressCurrent as number;
+  const progressTotal = opts.runningProgressTotal as number;
+  const ratio = clamp(progressCurrent / progressTotal, 0, 1);
   return {
     mode: 'determinate',
     fillPercent: ((completedBeforeRunning + ratio) / STEP_NAMES.length) * 100,
