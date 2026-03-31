@@ -9,6 +9,7 @@ from pathlib import Path
 from ghostframe.models import FastaRecord
 
 
+# Author name: Joshua Green
 def parse_file(path: Path | str) -> list[FastaRecord]:
     """Parse a FASTA file from a filesystem path.
 
@@ -29,6 +30,7 @@ def parse_file(path: Path | str) -> list[FastaRecord]:
     return parse_text(text)
 
 
+# Author name: Joshua Green
 def parse_text(text: str) -> list[FastaRecord]:
     """Parse FASTA from a raw string.
 
@@ -60,6 +62,7 @@ def parse_text(text: str) -> list[FastaRecord]:
         if line.startswith(">"):
             # Save previous record if exists
             if header is not None:
+                # concatenate sequence lines, remove spaces, and uppercase
                 sequence = "".join(sequence_lines).replace(" ", "").upper()
                 record_id = header.split()[0]
                 records.append(FastaRecord(id=record_id, description=header, sequence=sequence))
