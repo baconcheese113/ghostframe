@@ -75,6 +75,7 @@ STOP_CODONS = {"TAA", "TAG", "TGA"}
 
 _COMPLEMENT = str.maketrans("ACGT", "TGCA")
 
+
 # Author: Melaku Ashenafi
 def reverse_complement(seq: str) -> str:
     """Return the reverse complement of a DNA sequence.
@@ -102,6 +103,7 @@ def reverse_complement(seq: str) -> str:
     rev_comp = comp[::-1]
 
     return rev_comp
+
 
 # Author: Melaku Ashenafi
 def translate(dna: str) -> str:
@@ -136,7 +138,7 @@ def translate(dna: str) -> str:
         if codon in STOP_CODONS:
             protein_chars.append("*")
         else:
-            aa = CODON_TABLE.get(codon, "X") # "X" is for unknown codon
+            aa = CODON_TABLE.get(codon, "X")  # "X" is for unknown codon
             protein_chars.append(aa)
 
     return "".join(protein_chars)
