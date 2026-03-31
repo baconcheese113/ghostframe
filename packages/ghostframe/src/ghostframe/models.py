@@ -39,6 +39,7 @@ class Variant:
     alt: str
     classification: str  # e.g. "Silent", "Missense_Mutation"
     gene: str
+    sample_barcode: str | None = None
 
 
 @dataclass
@@ -77,6 +78,8 @@ class FrameEffect:
     synmicdb_score: float | None = None
     codon_pos: int | None = None  # 0-based index of mutated codon in ORF protein
     variant: NormalizedVariant | None = None  # source variant (for evidence lookups)
+    ref_codon: str = ""  # reference codon at mutation site (e.g. "ACG")
+    alt_codon: str = ""  # alternate codon after mutation (e.g. "TCG")
 
 
 @dataclass
@@ -217,7 +220,7 @@ class FastLaneResult:
 
 @dataclass
 class DeepLaneResult:
-    """Result of the deep lane pipeline for a single variant."""
+    """Result of the deep lane pipeline for a batch of reclassified variants."""
 
     peptides: list[Peptide]
     binding_predictions: list[BindingPrediction]

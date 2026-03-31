@@ -34,6 +34,7 @@ def parse(path: Path) -> list[Variant]:
                     alt=row["Tumor_Seq_Allele2"],
                     classification=row["Variant_Classification"],
                     gene=row["Hugo_Symbol"],
+                    sample_barcode=row.get("Tumor_Sample_Barcode") or None,
                 )
             )
     return variants

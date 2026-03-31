@@ -63,4 +63,5 @@ markers = [
     "golden: hand-computed ORF output tests for professor grading",
     "integration: tests requiring multiple modules or external services",
     "slow: tests that take significant time (MHC prediction, evidence fetch)",
+    "anyio: mark async tests to run with anyio",
 ]

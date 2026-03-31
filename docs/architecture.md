@@ -9,10 +9,10 @@ GhostFrame is a multi-frame variant impact scanner for cancer bioinformatics. It
 A researcher uploads a MAF file, selects a reference FASTA (or runs the demo), and within seconds sees:
 
 1. **Sankey diagram** — Silent → Missense / Stop-gain / Still-silent, by reading frame
-2. **Interactive variant table** — frame-by-frame reclassification per variant, filterable/sortable
-3. **3D Reading Frame Explorer** — single-variant drill-down: helix view with 6 frame ribbons, canonical vs. alternative effect highlighted side-by-side
+2. **Interactive ORF-effect table** — one row per overlapping ORF effect, filterable/sortable, with streamed per-row enrichment state, compact evidence-tier circles, and sortable ClinVar / SynMICdb signals
+3. **Reading Frame Explorer** — single-locus drill-down that keeps all six frames visible while strongly emphasizing the selected effect's frame, explicitly marking START / STOP codons, and clarifying that `*` denotes a stop codon
 4. **Embedded genome browser** (igv.js) — all 6 ORF tracks at the locus
-5. **Neoantigen candidate panel** — MHC binding scores for reclassified variants
+5. **Neoantigen candidate panel** — MHC binding scores for reclassified variants, explicitly labeled with the current HLA run allele
 6. **Evidence badges** per ORF — scanning-only / OpenProt-confirmed / SynMICdb-scored
 7. **LLM narrative panel** — plain-English explanation per variant citing computed artifacts (IC50, frame, domain overlap, SynMICdb score); always includes research disclaimer
 
@@ -35,6 +35,18 @@ The CLI (`ghostframe analyze`) serves as the power-user path. The FastAPI server
 | `reports/` | Export (JSON, TSV) | Both | Implemented (TSV + JSON) |
 | `pipeline/` | Fast/deep lane orchestration | Both | Implemented |
 | `cli/` | Click CLI entry points | N/A | Partial |
+
+Deep lane now runs as a streamed three-phase analysis:
+
+1. Translate ORFs, generate peptides, and run one MHCflurry batch over the deduplicated peptide set
+2. Run provider-aware lookups in parallel with separate pools for HMMER, OpenProt, ClinVar, and SynMICdb, scoring each variant as soon as its dependencies are ready
+3. Rank the already-scored candidates after the final provider work completes
+
+HMMER and OpenProt results are cached in-process for 24 hours. HMMER cache keys are SHA-256 hashes of translated proteins, and OpenProt cache keys are gene symbols.
+The API streams heartbeat/progress events for the user-facing deep-analysis steps `Peptides`, `MHC Binding`, `Domain & Evidence`, and `Rank & Score`, and emits per-variant enrichment events before final ranking completes so long-running external lookups do not leave the frontend idle.
+`fast_complete` also carries lightweight analysis metadata for the navbar label, and `enrich_complete` now distinguishes true binders from completed no-binder rows by sending nullable binding fields instead of synthetic zero-valued IC50s.
+`fast_complete.summary` also carries structured count fields (`total_input_variants`, `total_silent_variants`, `total_orfs`, `total_effects`, `reclassified_effects`), and `running` events may include `progress_current` / `progress_total` so the frontend can render a determinate progress segment for `Domain & Evidence`.
+Remote evidence providers are best-effort. Provider failures produce warning events and missing evidence for affected variants instead of terminating the full run.
 
 ## Pipeline flow
 
@@ -120,9 +132,11 @@ All external tools are accessed via free REST APIs for MVP and small cohorts. No
 |---|---|---|---|
 | OpenProt 2.0 | `evidence/openprot.py` | `https://api.openprot.org/api/2.0/HS/` | None |
 | EMBL-EBI HMMER JDispatcher | `domain/hmmer.py` | `https://www.ebi.ac.uk/Tools/services/rest/hmmer_hmmscan/` | None |
-| NCBI E-utilities | `evidence/clinvar.py`, `seqfetch/remote.py` | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` | API key optional (10 req/s free) |
+| NCBI E-utilities | `evidence/clinvar.py`, `seqfetch/remote.py` | `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/` | API key optional (3 req/s without key, 10 req/s with key) |
 | Ensembl REST | `seqfetch/remote.py` | `https://rest.ensembl.org/` | None |
 | Anthropic Claude | `explain/narrator.py` (planned) | `https://api.anthropic.com/` | `ANTHROPIC_API_KEY` required |
+
+Deep-lane concurrency caps are intentionally provider-specific: HMMER uses up to 20 workers, OpenProt 5, and ClinVar 3. SynMICdb is a local dataset lookup and can run at a higher local concurrency. ClinVar requests are throttled inside the core client to match NCBI E-utilities guidance and retried with bounded backoff on transient failures such as `429`, `5xx`, and network timeouts.
 
 **Local/containerized tools (batch mode only, via Snakemake):**
 - HMMER: `conda install -c bioconda hmmer` — for future large-cohort Snakemake runs; not used by the core library

@@ -12,10 +12,10 @@ from ghostframe.reclassify import codon_effect
 
 _EFFECT_TO_CLASS: dict[str, str] = {
     "synonymous": "Silent",
-    "missense": "Missense_Mutation",
-    "stop_gain": "Nonsense_Mutation",
-    "stop_loss": "Stop_Codon_Del",
-    "start_loss": "Start_Codon_Del",
+    "missense": "Missense",
+    "stop_gain": "Stop Gain",
+    "stop_loss": "Stop Gain",
+    "start_loss": "Start Loss",
 }
 
 
@@ -82,6 +82,9 @@ def reclassify(
                 new_class=new_class,
                 ref_aa=effect.ref_aa,
                 alt_aa=effect.alt_aa,
+                codon_pos=codon_idx,
+                ref_codon=ref_codon,
+                alt_codon=alt_codon,
             )
         )
 

@@ -10,11 +10,8 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@tanstack/react-table": "^8.21.3",
-    "d3": "^7.9.0",
-    "d3-sankey": "^0.12.3",
     "igv": "^3.8.0",
     "motion": "^12.38.0",
     "next": "16.2.1",
@@ -27,8 +24,6 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
-    "@types/d3": "^7.4.3",
-    "@types/d3-sankey": "^0.12.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -40,6 +35,7 @@
     "typescript": "^5"
   },
   "volta": {
-    "node": "24.14.1"
+    "node": "24.14.1",
+    "npm": "11.11.0"
   }
 }

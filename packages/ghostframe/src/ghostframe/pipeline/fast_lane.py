@@ -53,6 +53,8 @@ def run(
         window = window_mod.extract(variant, full_seq)
         orfs = find_orfs(window.sequence, min_len)
         effects = engine.reclassify(variant, orfs, window)
+        for e in effects:
+            e.variant = variant
         all_effects.extend(effects)
 
     result_summary = summary_mod.aggregate(all_effects)
