@@ -5,6 +5,7 @@ mocked so the suite runs fast with no network or model dependencies.
 """
 
 import json
+from collections.abc import Generator
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -111,7 +112,7 @@ def _make_mock_predictor(binding: BindingPrediction | None = None) -> MagicMock:
 
 
 @pytest.fixture(autouse=True)
-def _clear_deep_lane_caches() -> None:
+def _clear_deep_lane_caches() -> Generator[None]:
     deep_lane._HMMER_CACHE.clear()
     deep_lane._OPENPROT_CACHE.clear()
     yield
@@ -370,16 +371,11 @@ def test_run_reports_progress_events(
             progress_callback=events.append,
         )
 
-    running_names = [
-        event.get("name")
-        for event in events
-        if event.get("type") == "running"
-    ]
+    running_names = [event.get("name") for event in events if event.get("type") == "running"]
     domain_running_events = [
         event
         for event in events
-        if event.get("type") == "running"
-        and event.get("name") == "Domain & Evidence"
+        if event.get("type") == "running" and event.get("name") == "Domain & Evidence"
     ]
     completed_steps = {
         event.get("name")
@@ -387,9 +383,7 @@ def test_run_reports_progress_events(
         if event.get("type") == "step" and event.get("status") == "success"
     }
     candidate_ready_index = next(
-        index
-        for index, event in enumerate(events)
-        if event.get("type") == "candidate_ready"
+        index for index, event in enumerate(events) if event.get("type") == "candidate_ready"
     )
     rank_step_index = next(
         index
@@ -434,8 +428,7 @@ def test_run_continues_after_provider_warning(
 
     assert len(result.ranked_candidates) == 1
     assert any(
-        event.get("type") == "warning" and event.get("provider") == "hmmer"
-        for event in events
+        event.get("type") == "warning" and event.get("provider") == "hmmer" for event in events
     )
 
 

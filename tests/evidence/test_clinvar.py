@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from unittest.mock import patch
 
 import httpx
@@ -32,7 +33,7 @@ def _response(
 
 
 @pytest.fixture(autouse=True)
-def _reset_rate_limit_state() -> None:
+def _reset_rate_limit_state() -> Generator[None]:
     clinvar._NEXT_REQUEST_AT = 0.0
     yield
     clinvar._NEXT_REQUEST_AT = 0.0
@@ -64,9 +65,7 @@ def test_lookup_retries_429_then_succeeds(
                                 "last_evaluated": "2024-01-01",
                                 "trait_set": [{"trait_name": "Breast cancer"}],
                             },
-                            "oncogenicity_classification": {
-                                "description": "Oncogenic"
-                            },
+                            "oncogenicity_classification": {"description": "Oncogenic"},
                             "genes": [{"symbol": "BRCA2"}],
                             "molecular_consequence_list": ["missense variant"],
                             "obj_type": "single nucleotide variant",
@@ -104,9 +103,7 @@ def test_lookup_returns_warning_after_exhausting_429_retries(
 
     assert result is None
     assert mock_get.call_count == 4
-    assert warnings == [
-        "ClinVar rate-limited the request; continuing without ClinVar evidence."
-    ]
+    assert warnings == ["ClinVar rate-limited the request; continuing without ClinVar evidence."]
 
 
 @patch("ghostframe.evidence.clinvar.time.sleep", return_value=None)

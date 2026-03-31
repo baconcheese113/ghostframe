@@ -5,6 +5,7 @@ import json
 import tempfile
 import time
 import uuid
+from collections.abc import Sequence
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -113,7 +114,7 @@ def _count_label(count: int, singular: str, plural: str | None = None) -> str:
 
 def _build_analysis_meta(
     *,
-    variants: list[object],
+    variants: Sequence[object],
     maf_filename: str | None,
     is_demo: bool,
     hla_alleles: list[str],
@@ -221,13 +222,9 @@ def _candidate_to_enrichment_event(candidate: ScoredCandidate, elapsed_ms: int) 
             "openprot_type": (
                 evidence.openprot.protein_type if evidence and evidence.openprot else None
             ),
-            "synmicdb_score": (
-                evidence.synmicdb.score if evidence and evidence.synmicdb else None
-            ),
+            "synmicdb_score": (evidence.synmicdb.score if evidence and evidence.synmicdb else None),
             "clinvar_significance": (
-                evidence.clinvar.germline_significance
-                if evidence and evidence.clinvar
-                else None
+                evidence.clinvar.germline_significance if evidence and evidence.clinvar else None
             ),
         },
     }
@@ -410,11 +407,7 @@ async def start_analysis(request: AnalysisRequest) -> StreamingResponse:
 
             seq_fetch_elapsed_ms = int((time.perf_counter() - seq_fetch_start) * 1000)
             local_detail = ", ".join(seq_cache.keys())
-            remote_detail = (
-                f" + {len(remote_chroms)} chrom(s) via Ensembl"
-                if remote_chroms
-                else ""
-            )
+            remote_detail = f" + {len(remote_chroms)} chrom(s) via Ensembl" if remote_chroms else ""
             seq_detail = (
                 f"{local_detail}{remote_detail} in {_format_elapsed_ms(seq_fetch_elapsed_ms)}"
             )
@@ -504,9 +497,7 @@ async def start_analysis(request: AnalysisRequest) -> StreamingResponse:
 
             result_summary = summary_mod.aggregate(all_effects)
             reclassified = sum(
-                count
-                for cls, count in result_summary.counts_by_type.items()
-                if cls != "Silent"
+                count for cls, count in result_summary.counts_by_type.items() if cls != "Silent"
             )
             frames_affected = len(
                 {effect.orf.frame for effect in all_effects if effect.new_class != "Silent"}

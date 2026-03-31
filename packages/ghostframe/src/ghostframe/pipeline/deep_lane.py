@@ -10,6 +10,7 @@ from collections.abc import Callable, Iterable
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from hashlib import sha256
+from typing import cast
 
 from cachetools import TTLCache
 
@@ -171,10 +172,7 @@ def run_streaming(
     _emit_running(
         progress_callback,
         "MHC Binding",
-        (
-            f"Predicting {len(unique_peptides)} unique peptides across "
-            f"{len(alleles)} allele(s)"
-        ),
+        (f"Predicting {len(unique_peptides)} unique peptides across {len(alleles)} allele(s)"),
         0,
     )
     prediction_by_sequence = _predict_bindings(
@@ -183,8 +181,7 @@ def run_streaming(
         alleles,
     )
     best_bindings = [
-        _best_binding_for_peptides(peptides, prediction_by_sequence)
-        for peptides in peptide_sets
+        _best_binding_for_peptides(peptides, prediction_by_sequence) for peptides in peptide_sets
     ]
     mhc_elapsed_ms = _elapsed_ms(mhc_start)
     binding_predictions = [binding for binding in best_bindings if binding is not None]
@@ -197,10 +194,7 @@ def run_streaming(
         progress_callback,
         "MHC Binding",
         "success",
-        (
-            f"{len(binding_predictions)} best bindings in "
-            f"{_format_elapsed_ms(mhc_elapsed_ms)}"
-        ),
+        (f"{len(binding_predictions)} best bindings in {_format_elapsed_ms(mhc_elapsed_ms)}"),
         mhc_elapsed_ms,
     )
 
@@ -292,7 +286,7 @@ def run_streaming(
         _elapsed_ms(total_start),
     )
 
-    future_to_meta: dict[Future[_ProviderOutcome[object]], _FutureMeta] = {}
+    future_to_meta: dict[Future[object], _FutureMeta] = {}
     provider_started_at = {
         "hmmer": time.perf_counter(),
         "openprot": time.perf_counter(),
@@ -307,30 +301,33 @@ def run_streaming(
         ThreadPoolExecutor(max_workers=_SYNMICDB_MAX_WORKERS) as synmicdb_pool,
     ):
         for protein_key, protein in proteins_to_submit.items():
-            future_to_meta[
-                hmmer_pool.submit(_safe_hmmer_scan, protein)
-            ] = _FutureMeta("hmmer", protein_key)
+            future_to_meta[cast(Future[object], hmmer_pool.submit(_safe_hmmer_scan, protein))] = (
+                _FutureMeta("hmmer", protein_key)
+            )
         for gene_key, effect in genes_to_submit.items():
             if effect.variant is None:
                 continue
             future_to_meta[
-                openprot_pool.submit(
-                    _safe_openprot_lookup,
-                    effect,
+                cast(
+                    Future[object],
+                    openprot_pool.submit(
+                        _safe_openprot_lookup,
+                        effect,
+                    ),
                 )
             ] = _FutureMeta("openprot", gene_key)
         for variant_key, variant in variants_to_submit.items():
             future_to_meta[
-                clinvar_pool.submit(_safe_clinvar_lookup, variant)
+                cast(Future[object], clinvar_pool.submit(_safe_clinvar_lookup, variant))
             ] = _FutureMeta("clinvar", variant_key)
             future_to_meta[
-                synmicdb_pool.submit(_safe_synmicdb_lookup, variant)
+                cast(Future[object], synmicdb_pool.submit(_safe_synmicdb_lookup, variant))
             ] = _FutureMeta("synmicdb", variant_key)
 
         for future in as_completed(future_to_meta):
             meta = future_to_meta[future]
             try:
-                outcome = future.result()
+                outcome = cast(_ProviderOutcome[object], future.result())
             except Exception as exc:
                 outcome = _fallback_outcome(meta.provider, exc)
 
@@ -372,13 +369,10 @@ def run_streaming(
 
             current_completed = provider_completed[meta.provider]
             current_total = provider_totals[meta.provider]
-            if (
-                current_total > 0
-                and (
-                    current_completed == current_total
-                    or current_completed == 1
-                    or current_completed % _PROGRESS_REPORT_EVERY == 0
-                )
+            if current_total > 0 and (
+                current_completed == current_total
+                or current_completed == 1
+                or current_completed % _PROGRESS_REPORT_EVERY == 0
             ):
                 provider_elapsed_ms = _elapsed_ms(provider_started_at[meta.provider])
                 print(
@@ -452,10 +446,7 @@ def run_streaming(
     )
 
     total_elapsed_ms = _elapsed_ms(total_start)
-    print(
-        f"[deep_lane] total ({len(effects)} variants): "
-        f"{_format_elapsed_ms(total_elapsed_ms)}"
-    )
+    print(f"[deep_lane] total ({len(effects)} variants): {_format_elapsed_ms(total_elapsed_ms)}")
     _report(
         progress_callback,
         {
@@ -621,19 +612,9 @@ def _score_candidate(
     clinvar_by_variant: dict[_VariantKey, ClinVarHit | None],
 ) -> ScoredCandidate:
     domain_hits = domain_by_protein_key.get(ctx.protein_key, [])
-    openprot_hit = (
-        openprot_by_gene.get(ctx.gene_key) if ctx.gene_key is not None else None
-    )
-    synmicdb_hit = (
-        synmicdb_by_variant.get(ctx.variant_key)
-        if ctx.variant_key is not None
-        else None
-    )
-    clinvar_hit = (
-        clinvar_by_variant.get(ctx.variant_key)
-        if ctx.variant_key is not None
-        else None
-    )
+    openprot_hit = openprot_by_gene.get(ctx.gene_key) if ctx.gene_key is not None else None
+    synmicdb_hit = synmicdb_by_variant.get(ctx.variant_key) if ctx.variant_key is not None else None
+    clinvar_hit = clinvar_by_variant.get(ctx.variant_key) if ctx.variant_key is not None else None
 
     tier = 3 if synmicdb_hit else (2 if openprot_hit else 1)
     evidence = EvidenceLookupResult(

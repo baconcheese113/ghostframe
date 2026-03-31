@@ -78,6 +78,7 @@ class AnalysisRequest(BaseModel):
 
 # Deep lane response types
 
+
 class DomainHitResponse(BaseModel):
     accession: str
     name: str

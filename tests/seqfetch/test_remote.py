@@ -1,27 +1,31 @@
 """Tests for seqfetch.remote batch fetch and chromosome normalization."""
 
-import pytest
-import httpx
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from ghostframe.seqfetch.remote import _normalize_chrom, fetch_batch
+import httpx
+import pytest
 
+from ghostframe.seqfetch.remote import _normalize_chrom, fetch_batch
 
 # ---------------------------------------------------------------------------
 # _normalize_chrom
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("raw, expected", [
-    ("chr1", "1"),
-    ("chrX", "X"),
-    ("chrY", "Y"),
-    ("chr22", "22"),
-    ("chrM", "MT"),
-    ("chrMT", "MT"),
-    ("1", "1"),
-    ("X", "X"),
-    ("MT", "MT"),
-])
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("chr1", "1"),
+        ("chrX", "X"),
+        ("chrY", "Y"),
+        ("chr22", "22"),
+        ("chrM", "MT"),
+        ("chrMT", "MT"),
+        ("1", "1"),
+        ("X", "X"),
+        ("MT", "MT"),
+    ],
+)
 def test_normalize_chrom(raw, expected):
     assert _normalize_chrom(raw) == expected
 
@@ -29,6 +33,7 @@ def test_normalize_chrom(raw, expected):
 # ---------------------------------------------------------------------------
 # fetch_batch — chunking
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.anyio
 async def test_fetch_batch_empty_returns_empty():
@@ -68,6 +73,7 @@ async def test_fetch_batch_chunks_51_regions_into_two_posts():
 # fetch_batch — return value
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_fetch_batch_returns_uppercase_sequences():
     regions = [("chr1", 1000, 2000), ("chrX", 5000, 6000)]
@@ -96,6 +102,7 @@ async def test_fetch_batch_returns_uppercase_sequences():
 # fetch_batch — tenacity retry on 429
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.anyio
 async def test_fetch_batch_retries_on_429():
     """Two 429 responses followed by a 200 should succeed after 3 total calls."""
@@ -108,7 +115,11 @@ async def test_fetch_batch_retries_on_429():
         if call_count < 3:
             error_response = MagicMock()
             error_response.status_code = 429
-            raise httpx.HTTPStatusError("rate limited", request=MagicMock(), response=error_response)
+            raise httpx.HTTPStatusError(
+                "rate limited",
+                request=MagicMock(),
+                response=error_response,
+            )
         response = MagicMock()
         response.raise_for_status = MagicMock()
         response.json.return_value = [{"seq": "ACGT" * 250}]
@@ -133,7 +144,9 @@ async def test_fetch_batch_retries_on_429():
 # Integration — real Ensembl call (skipped unless --run-integration)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.integration
+@pytest.mark.anyio
 async def test_fetch_batch_real_ensembl():
     """Fetch a known 1001 bp window from Ensembl (requires network)."""
     result = await fetch_batch([("1", 1000000, 1001000)])

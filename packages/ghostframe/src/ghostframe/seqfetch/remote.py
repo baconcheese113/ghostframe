@@ -43,8 +43,7 @@ def fetch(chrom: str, start: int, end: int) -> str:
 
 @retry(
     retry=retry_if_exception(
-        lambda e: isinstance(e, httpx.HTTPStatusError)
-        and e.response.status_code in (429, 503)
+        lambda e: isinstance(e, httpx.HTTPStatusError) and e.response.status_code in (429, 503)
     ),
     wait=wait_exponential(multiplier=1, min=1, max=8),
     stop=stop_after_attempt(4),
@@ -93,12 +92,10 @@ async def fetch_batch(
 
     # Chunk into batches of _BATCH_SIZE
     batches: list[list[str]] = [
-        region_strings[i : i + _BATCH_SIZE]
-        for i in range(0, len(region_strings), _BATCH_SIZE)
+        region_strings[i : i + _BATCH_SIZE] for i in range(0, len(region_strings), _BATCH_SIZE)
     ]
     batch_indices: list[list[tuple[str, int, int]]] = [
-        index[i : i + _BATCH_SIZE]
-        for i in range(0, len(index), _BATCH_SIZE)
+        index[i : i + _BATCH_SIZE] for i in range(0, len(index), _BATCH_SIZE)
     ]
 
     semaphore = asyncio.Semaphore(concurrency)
@@ -111,16 +108,22 @@ async def fetch_batch(
     ) -> None:
         async with semaphore:
             data = await _post_batch(client, batch_regions)
-        for key, item in zip(batch_keys, data):
+        for key, item in zip(batch_keys, data, strict=True):
             seq = item.get("seq", "")
             results[key] = seq.upper()
             print(
-                f"Fetched sequence from Ensembl (batch): "
-                f"{key[0]}:{key[1]}-{key[2]} ({len(seq)} bp)"
+                f"Fetched sequence from Ensembl (batch): {key[0]}:{key[1]}-{key[2]} ({len(seq)} bp)"
             )
 
     async with httpx.AsyncClient() as client:
         await asyncio.gather(
-            *[fetch_one_batch(client, b, k) for b, k in zip(batches, batch_indices)]
+            *[
+                fetch_one_batch(client, batch_regions, batch_keys)
+                for batch_regions, batch_keys in zip(
+                    batches,
+                    batch_indices,
+                    strict=True,
+                )
+            ]
         )
     return results

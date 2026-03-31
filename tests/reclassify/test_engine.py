@@ -161,15 +161,9 @@ class TestSummaryAggregate:
     def test_multiple_types(self) -> None:
         orf = _orf(frame=1, pos=1, dna="ATG")
         effects = [
-            FrameEffect(
-                orf=orf, old_class="Silent", new_class="Missense", ref_aa="M", alt_aa="T"
-            ),
-            FrameEffect(
-                orf=orf, old_class="Silent", new_class="Missense", ref_aa="K", alt_aa="S"
-            ),
-            FrameEffect(
-                orf=orf, old_class="Silent", new_class="Stop Gain", ref_aa="K", alt_aa="*"
-            ),
+            FrameEffect(orf=orf, old_class="Silent", new_class="Missense", ref_aa="M", alt_aa="T"),
+            FrameEffect(orf=orf, old_class="Silent", new_class="Missense", ref_aa="K", alt_aa="S"),
+            FrameEffect(orf=orf, old_class="Silent", new_class="Stop Gain", ref_aa="K", alt_aa="*"),
         ]
         result = summary.aggregate(effects)
         assert result.counts_by_type == {"Missense": 2, "Stop Gain": 1}
