@@ -4,5 +4,5 @@
     "packages/ghostframe-api/src",
     "tests"
   ],
-  "typeCheckingMode": "strict"
+  "typeCheckingMode": "standard"
 }

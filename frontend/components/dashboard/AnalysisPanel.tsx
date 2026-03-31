@@ -1,60 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import type { ApiWarning } from '@/lib/types';
 
 interface AnalysisPanelProps {
   open: boolean;
   onToggle: () => void;
-  onAnalyze: (opts: {
-    accession: string;
-    rawSequence: string | null;
-    inputType: 'accession' | 'sequence';
-  }) => void;
-  onLoadDemo: () => void;
+  onAnalyze: (opts: { mafContent: string | null; mafFilename: string | null }) => void;
   isLoading?: boolean;
   apiError?: string | null;
+  warnings?: ApiWarning[];
 }
 
 export default function AnalysisPanel({
   open,
   onToggle,
   onAnalyze,
-  onLoadDemo,
   isLoading = false,
   apiError = null,
+  warnings = [],
 }: AnalysisPanelProps) {
-  const [activeTab, setActiveTab] = useState<'accession' | 'sequence'>('accession');
-  const [accession, setAccession] = useState('');
-  const [rawSequence, setRawSequence] = useState('');
-  const [seqError, setSeqError] = useState('');
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (activeTab === 'sequence' && rawSequence.trim() === '') {
-      setSeqError('Paste a DNA sequence or FASTA block above');
-      return;
-    }
-    setSeqError('');
-    onAnalyze({
-      accession: accession || 'K02718.1',
-      rawSequence: activeTab === 'sequence' ? rawSequence : null,
-      inputType: activeTab,
-    });
-  }
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mafContent, setMafContent] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [lineCount, setLineCount] = useState<number | null>(null);
 
   const accent = '#22d3ee';
-  const inputStyle: React.CSSProperties = {
-    background: 'rgba(2,14,28,0.7)',
-    border: '1px solid rgba(34,211,238,0.18)',
-    borderRadius: 6,
-    color: '#e2f3ff',
-    padding: '6px 10px',
-    fontSize: 13,
-    fontFamily: 'JetBrains Mono, monospace',
-    outline: 'none',
-    width: '100%',
-  };
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      setMafContent(text);
+      setFileName(file.name);
+      setLineCount(text.split('\n').filter((l) => l.trim() && !l.startsWith('#')).length);
+    };
+    reader.readAsText(file);
+  }
 
   return (
     <div
@@ -62,7 +47,7 @@ export default function AnalysisPanel({
       className="glass rounded-xl mx-4 sm:mx-0 overflow-hidden"
       style={{ borderColor: open ? 'rgba(34,211,238,0.25)' : 'rgba(34,211,238,0.1)' }}
     >
-      {/* Collapsed bar — always visible */}
+      {/* Collapsed bar */}
       <button
         type="button"
         onClick={onToggle}
@@ -79,7 +64,7 @@ export default function AnalysisPanel({
         </div>
         {!open && (
           <span className="text-[10px] font-data" style={{ color: '#334155' }}>
-            Enter accession or paste sequence
+            Upload MAF or use demo data
           </span>
         )}
       </button>
@@ -95,65 +80,42 @@ export default function AnalysisPanel({
             transition={{ duration: 0.25, ease: 'easeInOut' }}
             style={{ overflow: 'hidden' }}
           >
-            <form onSubmit={handleSubmit} className="px-4 pb-4 flex flex-col gap-3">
-              {/* Tab bar */}
-              <div className="flex gap-0 border-b" style={{ borderColor: 'rgba(34,211,238,0.1)' }}>
-                {(['accession', 'sequence'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => { setActiveTab(tab); setSeqError(''); }}
-                    className="font-data text-[11px] px-3 py-2 capitalize transition-colors cursor-pointer"
-                    style={{
-                      color: activeTab === tab ? accent : '#475569',
-                      borderBottom: activeTab === tab ? `2px solid ${accent}` : '2px solid transparent',
-                      marginBottom: -1,
-                    }}
-                  >
-                    {tab === 'accession' ? 'Accession' : 'Sequence'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab content */}
-              {activeTab === 'accession' && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-data" style={{ color: '#475569' }}>Accession ID</label>
-                  <input
-                    type="text"
-                    placeholder="K02718.1"
-                    value={accession}
-                    onChange={(e) => setAccession(e.target.value)}
-                    style={inputStyle}
-                  />
+            <div className="px-4 pb-4 flex flex-col gap-3">
+              {/* File upload */}
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] font-data" style={{ color: '#475569' }}>
+                  MAF file
+                </label>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="font-data text-[11px] px-3 py-2 rounded-lg text-left transition-all cursor-pointer"
+                  style={{
+                    background: 'rgba(2,14,28,0.7)',
+                    border: '1px solid rgba(34,211,238,0.18)',
+                    color: fileName ? '#e2f3ff' : '#475569',
+                  }}
+                >
+                  {fileName ? fileName : 'Choose .maf or .txt file…'}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".maf,.txt"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                {lineCount !== null && (
                   <span className="text-[10px] font-data" style={{ color: '#334155' }}>
-                    NCBI / GenBank accession — currently loads K02718.1 demo
+                    {lineCount} variant rows loaded
                   </span>
-                </div>
-              )}
-
-              {activeTab === 'sequence' && (
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-data" style={{ color: '#475569' }}>Paste sequence</label>
-                  <textarea
-                    rows={7}
-                    placeholder={'>seq_id\nATCGATCGATCG...\n\nor just paste raw DNA'}
-                    value={rawSequence}
-                    onChange={(e) => { setRawSequence(e.target.value); setSeqError(''); }}
-                    style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
-                  />
-                  {seqError && (
-                    <span className="text-[10px] font-data" style={{ color: '#ef4444' }}>
-                      {seqError}
-                    </span>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="flex items-center justify-between gap-2">
                 <button
                   type="button"
-                  onClick={onLoadDemo}
+                  onClick={() => onAnalyze({ mafContent: null, mafFilename: null })}
                   disabled={isLoading}
                   className="font-data text-[11px] px-3 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-40"
                   style={{
@@ -165,8 +127,9 @@ export default function AnalysisPanel({
                   Use Demo Data
                 </button>
                 <button
-                  type="submit"
-                  disabled={isLoading}
+                  type="button"
+                  onClick={() => onAnalyze({ mafContent, mafFilename: fileName })}
+                  disabled={isLoading || mafContent === null}
                   className="font-display text-xs font-semibold px-4 py-1.5 rounded-lg transition-all cursor-pointer disabled:opacity-40"
                   style={{
                     background: 'rgba(34,211,238,0.12)',
@@ -177,12 +140,36 @@ export default function AnalysisPanel({
                   {isLoading ? 'Analyzing…' : 'Analyze →'}
                 </button>
               </div>
-            </form>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Error chip — always visible, outside the collapsible so it survives panel collapse */}
+      {warnings.length > 0 && (
+        <div
+          className="mx-4 mb-3 text-[11px] font-data px-3 py-2 rounded-lg flex flex-col gap-1"
+          style={{
+            background: 'rgba(251,191,36,0.06)',
+            border: '1px solid rgba(251,191,36,0.18)',
+            color: '#cbd5e1',
+          }}
+        >
+          <span style={{ color: '#fbbf24' }}>
+            Warnings ({warnings.length})
+          </span>
+          {warnings.slice(0, 3).map((warning, index) => (
+            <span key={`${warning.provider ?? 'provider'}-${warning.message ?? 'message'}-${index}`}>
+              {(warning.provider ?? 'Provider').toUpperCase()}: {warning.message ?? 'Partial evidence unavailable.'}
+            </span>
+          ))}
+          {warnings.length > 3 && (
+            <span style={{ color: '#94a3b8' }}>
+              +{warnings.length - 3} more warning(s)
+            </span>
+          )}
+        </div>
+      )}
+
       {apiError && (
         <div
           className="mx-4 mb-3 text-[11px] font-data px-3 py-2 rounded-lg"

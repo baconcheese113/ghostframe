@@ -91,10 +91,32 @@ def _make_domain_hit() -> DomainHit:
 
 
 def _make_mock_predictor(binding: BindingPrediction | None = None) -> MagicMock:
-    bp = binding or _make_binding()
     mock_cls: MagicMock = MagicMock()
-    mock_cls.return_value.predict.return_value = [bp]
+
+    def _predict(peptides: list[Peptide], alleles: list[str]) -> list[BindingPrediction]:
+        base = binding or _make_binding()
+        allele = alleles[0] if alleles else base.allele
+        return [
+            BindingPrediction(
+                peptide=peptide,
+                allele=allele,
+                affinity=base.affinity + index,
+                rank=base.rank + index,
+            )
+            for index, peptide in enumerate(peptides)
+        ]
+
+    mock_cls.return_value.predict.side_effect = _predict
     return mock_cls
+
+
+@pytest.fixture(autouse=True)
+def _clear_deep_lane_caches() -> None:
+    deep_lane._HMMER_CACHE.clear()
+    deep_lane._OPENPROT_CACHE.clear()
+    yield
+    deep_lane._HMMER_CACHE.clear()
+    deep_lane._OPENPROT_CACHE.clear()
 
 
 # --- Tests ---
@@ -139,7 +161,10 @@ def test_run_produces_ranked_candidates(
     assert len(result.ranked_candidates) == 1
     cand = result.ranked_candidates[0]
     assert isinstance(cand, ScoredCandidate)
-    assert cand.binding == binding
+    assert cand.binding is not None
+    assert cand.binding.allele == binding.allele
+    assert cand.binding.affinity == binding.affinity
+    assert cand.binding.rank == binding.rank
     assert 0.0 <= cand.score <= 1.0
 
 
@@ -258,6 +283,160 @@ def test_run_multiple_effects_all_ranked(
     assert len(result.ranked_candidates) == 2
     scores = [c.score for c in result.ranked_candidates]
     assert scores == sorted(scores, reverse=True)
+
+
+@patch(_CLINVAR_TARGET, return_value=None)
+@patch(_SYNMICDB_TARGET, return_value=None)
+@patch(_OPENPROT_TARGET, return_value=None)
+@patch(_HMMER_TARGET, return_value=[])
+def test_run_deduplicates_shared_effect_lookups(
+    mock_hmmer: MagicMock,
+    mock_op: MagicMock,
+    mock_syn: MagicMock,
+    mock_cv: MagicMock,
+) -> None:
+    """Shared proteins, genes, and variants are looked up only once per batch."""
+    effects = [
+        _make_effect(codon_pos=1, with_variant=True),
+        _make_effect(codon_pos=2, with_variant=True),
+    ]
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
+        result = deep_lane.run(_make_fast_result(effects))
+
+    assert len(result.ranked_candidates) == 2
+    mock_hmmer.assert_called_once()
+    mock_op.assert_called_once()
+    mock_syn.assert_called_once()
+    mock_cv.assert_called_once()
+
+
+@patch(_CLINVAR_TARGET, return_value=None)
+@patch(_SYNMICDB_TARGET, return_value=None)
+@patch(_OPENPROT_TARGET, return_value=None)
+@patch(_HMMER_TARGET, return_value=[])
+def test_run_batches_mhcflurry_predictions_once(
+    _mock_hmmer: MagicMock,
+    _mock_op: MagicMock,
+    _mock_syn: MagicMock,
+    _mock_cv: MagicMock,
+) -> None:
+    """All peptide predictions are requested in a single MHCflurry batch."""
+    predictor_cls = _make_mock_predictor()
+    effects = [_make_effect(codon_pos=1), _make_effect(codon_pos=2)]
+
+    with patch(_BINDING_TARGET, predictor_cls):
+        deep_lane.run(_make_fast_result(effects))
+
+    predictor_cls.return_value.predict.assert_called_once()
+
+
+@patch(_CLINVAR_TARGET, return_value=None)
+@patch(_SYNMICDB_TARGET, return_value=None)
+@patch(_OPENPROT_TARGET, return_value=None)
+@patch(_HMMER_TARGET, return_value=[])
+def test_run_reuses_hmmer_and_openprot_caches_across_runs(
+    mock_hmmer: MagicMock,
+    mock_op: MagicMock,
+    mock_syn: MagicMock,
+    mock_cv: MagicMock,
+) -> None:
+    """Domain and OpenProt lookups are cached across repeated analyses."""
+    fast_result = _make_fast_result([_make_effect(codon_pos=1, with_variant=True)])
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
+        deep_lane.run(fast_result)
+        deep_lane.run(fast_result)
+
+    mock_hmmer.assert_called_once()
+    mock_op.assert_called_once()
+    assert mock_syn.call_count == 2
+    assert mock_cv.call_count == 2
+
+
+@patch(_CLINVAR_TARGET, return_value=None)
+@patch(_SYNMICDB_TARGET, return_value=None)
+@patch(_OPENPROT_TARGET, return_value=None)
+@patch(_HMMER_TARGET, return_value=[])
+def test_run_reports_progress_events(
+    _mock_hmmer: MagicMock,
+    _mock_op: MagicMock,
+    _mock_syn: MagicMock,
+    _mock_cv: MagicMock,
+) -> None:
+    """Deep lane reports user-facing step events and early candidate readiness."""
+    events: list[dict[str, object]] = []
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
+        deep_lane.run(
+            _make_fast_result([_make_effect(codon_pos=1, with_variant=True)]),
+            progress_callback=events.append,
+        )
+
+    running_names = [
+        event.get("name")
+        for event in events
+        if event.get("type") == "running"
+    ]
+    domain_running_events = [
+        event
+        for event in events
+        if event.get("type") == "running"
+        and event.get("name") == "Domain & Evidence"
+    ]
+    completed_steps = {
+        event.get("name")
+        for event in events
+        if event.get("type") == "step" and event.get("status") == "success"
+    }
+    candidate_ready_index = next(
+        index
+        for index, event in enumerate(events)
+        if event.get("type") == "candidate_ready"
+    )
+    rank_step_index = next(
+        index
+        for index, event in enumerate(events)
+        if event.get("type") == "step" and event.get("name") == "Rank & Score"
+    )
+
+    assert "Peptides" in running_names
+    assert "MHC Binding" in running_names
+    assert "Domain & Evidence" in running_names
+    assert domain_running_events[0].get("progress_current") == 0
+    assert domain_running_events[0].get("progress_total") == 4
+    assert domain_running_events[-1].get("progress_current") == 4
+    assert domain_running_events[-1].get("progress_total") == 4
+    assert completed_steps == {
+        "Peptides",
+        "MHC Binding",
+        "Domain & Evidence",
+        "Rank & Score",
+    }
+    assert candidate_ready_index < rank_step_index
+    assert any(event.get("type") == "deep_complete" for event in events)
+
+
+@patch(_CLINVAR_TARGET, return_value=None)
+@patch(_SYNMICDB_TARGET, return_value=None)
+@patch(_OPENPROT_TARGET, return_value=None)
+@patch(_HMMER_TARGET, side_effect=RuntimeError("hmmer unavailable"))
+def test_run_continues_after_provider_warning(
+    _mock_hmmer: MagicMock,
+    _mock_op: MagicMock,
+    _mock_syn: MagicMock,
+    _mock_cv: MagicMock,
+) -> None:
+    """Provider failures become warnings and still produce ranked candidates."""
+    events: list[dict[str, object]] = []
+    with patch(_BINDING_TARGET, _make_mock_predictor()):
+        result = deep_lane.run(
+            _make_fast_result([_make_effect(codon_pos=1, with_variant=True)]),
+            progress_callback=events.append,
+        )
+
+    assert len(result.ranked_candidates) == 1
+    assert any(
+        event.get("type") == "warning" and event.get("provider") == "hmmer"
+        for event in events
+    )
 
 
 # --- to_json tests ---

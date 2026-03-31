@@ -38,5 +38,9 @@
     "knip": "^6.0.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "volta": {
+    "node": "24.14.1",
+    "npm": "11.11.0"
   }
 }
