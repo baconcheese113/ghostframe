@@ -17,14 +17,14 @@ RUN uv sync --package ghostframe-api
 # Patch mhcflurry for Python 3.13 (pipes module was removed)
 RUN echo "from shlex import quote" > .venv/lib/python3.13/site-packages/pipes.py
 
-# Pre-download MHCflurry models at build time (~400 MB)
-# This avoids a cold-start timeout on first request
-RUN uv run mhcflurry-downloads fetch models_class1_presentation
-
-# Fix ownership after root-level installs
+# Fix ownership before switching to user
 RUN chown -R user:user /app
 
 USER user
+
+# Pre-download MHCflurry models at build time (~400 MB) as the runtime user
+# so models land in /home/user/.local/share/mhcflurry/ where the app expects them
+RUN uv run mhcflurry-downloads fetch models_class1_presentation
 
 EXPOSE 7860
 
