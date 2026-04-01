@@ -22,9 +22,7 @@ from ghostframe.orfs.scanner import find_orfs
 from ghostframe.pipeline import deep_lane
 from ghostframe.reclassify import engine
 from ghostframe.reclassify import summary as summary_mod
-from ghostframe.seqfetch import local
 from ghostframe.seqfetch import remote as remote_mod
-from ghostframe.seqfetch import window as window_mod
 from ghostframe.variants import filters, maf, normalize
 from ghostframe_api.config import Settings
 from ghostframe_api.schemas import AnalysisRequest
@@ -342,22 +340,8 @@ async def start_analysis(request: AnalysisRequest) -> StreamingResponse:
             await asyncio.sleep(0)
 
             try:
-                seq_cache: dict[str, str] = {}
                 remote_windows: dict[str, GenomicWindow] = {}
-                remote_chroms: set[str] = set()
-
-                for variant in normalized:
-                    if variant.chrom in seq_cache or variant.chrom in remote_chroms:
-                        continue
-                    try:
-                        seq_cache[variant.chrom] = local.fetch(
-                            variant.chrom,
-                            0,
-                            10**9,
-                            _settings.demo_fasta,
-                        )
-                    except Exception:
-                        remote_chroms.add(variant.chrom)
+                remote_chroms: set[str] = {v.chrom for v in normalized}
 
                 if remote_chroms:
                     flank = 500
@@ -406,16 +390,9 @@ async def start_analysis(request: AnalysisRequest) -> StreamingResponse:
                 return
 
             seq_fetch_elapsed_ms = int((time.perf_counter() - seq_fetch_start) * 1000)
-            local_detail = ", ".join(seq_cache.keys())
-            remote_detail = f" + {len(remote_chroms)} chrom(s) via Ensembl" if remote_chroms else ""
-            seq_detail = (
-                f"{local_detail}{remote_detail} in {_format_elapsed_ms(seq_fetch_elapsed_ms)}"
-            )
-            _log_step(
-                "Seq Fetch",
-                local_detail + remote_detail if local_detail or remote_detail else "complete",
-                seq_fetch_elapsed_ms,
-            )
+            remote_detail = f"{len(remote_chroms)} chrom(s) via Ensembl"
+            seq_detail = f"{remote_detail} in {_format_elapsed_ms(seq_fetch_elapsed_ms)}"
+            _log_step("Seq Fetch", remote_detail, seq_fetch_elapsed_ms)
             yield emit(
                 {
                     "type": "step",
@@ -444,10 +421,7 @@ async def start_analysis(request: AnalysisRequest) -> StreamingResponse:
             total_orfs = 0
 
             for variant in normalized:
-                if variant.chrom in seq_cache:
-                    window = window_mod.extract(variant, seq_cache[variant.chrom])
-                else:
-                    window = remote_windows[f"{variant.chrom}_{variant.pos}"]
+                window = remote_windows[f"{variant.chrom}_{variant.pos}"]
 
                 orfs = find_orfs(window.sequence, request.min_orf_length)
                 total_orfs += len(orfs)
