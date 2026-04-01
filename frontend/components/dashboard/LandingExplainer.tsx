@@ -1,12 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { NUCLEOTIDE_COLORS, FRAME_COLORS } from '@/lib/colors';
+import { FRAME_COLORS } from '@/lib/colors';
+
+// Colors matched to the codon wheel image (G=green, U=sky, C=violet, A=rose)
+const NT_COLORS: Record<string, string> = {
+  G: '#22c55e',
+  U: '#38bdf8',
+  C: '#a78bfa',
+  A: '#fb7185',
+  T: '#38bdf8', // T treated as U (same color)
+};
 
 // ─── Nucleotide box ───────────────────────────────────────────────────────────
 
 function NtBox({ nt, changed = false }: { nt: string; changed?: boolean }) {
-  const color = NUCLEOTIDE_COLORS[nt] ?? '#64748b';
+  const color = NT_COLORS[nt] ?? '#64748b';
   return (
     <span
       className="inline-flex items-center justify-center rounded font-data font-bold text-[11px]"
@@ -36,6 +45,7 @@ function CodonPair({
   return (
     <div className="flex items-center gap-3 flex-wrap">
       <div className="flex flex-col items-center gap-1">
+        <span className="font-data text-[10px] font-bold" style={{ color: '#94a3b8' }}>{refAa}</span>
         <div className="flex gap-0.5">
           {refCodon.split('').map((nt, i) => <NtBox key={i} nt={nt} />)}
         </div>
@@ -43,6 +53,7 @@ function CodonPair({
       </div>
       <span className="font-data text-[14px]" style={{ color: '#475569' }}>→</span>
       <div className="flex flex-col items-center gap-1">
+        <span className="font-data text-[10px] font-bold" style={{ color: effectColor }}>{altAa}</span>
         <div className="flex gap-0.5">
           {altCodon.split('').map((nt, i) => <NtBox key={i} nt={nt} changed={i === changedIdx} />)}
         </div>
@@ -69,12 +80,13 @@ function CodonPair({
 // ─── Frame comparison row ─────────────────────────────────────────────────────
 
 function FrameRow({
-  frameNum, direction, refCodon, altCodon, refAa, altAa, effect,
+  frameNum, direction, refCodon, altCodon, refAa, altAa, effect, offset = 0,
 }: {
-  frameNum: 1 | 4; direction: 'Fwd' | 'Rev';
+  frameNum: 1 | 2; direction: 'Fwd';
   refCodon: string; altCodon: string;
   refAa: string; altAa: string;
   effect: 'Silent' | 'Missense';
+  offset?: number;
 }) {
   const frameColor = FRAME_COLORS[frameNum];
   const isSilent = effect === 'Silent';
@@ -101,20 +113,23 @@ function FrameRow({
         </span>
         <span className="font-data text-[10px]" style={{ color: frameColor }}>{direction}</span>
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className="flex gap-0.5">
-          {refCodon.split('').map((nt, i) => <NtBox key={i} nt={nt} />)}
+      <div className="flex items-center gap-1.5" style={{ marginLeft: offset * 23 }}>
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-data text-[10px] font-bold" style={{ color: '#94a3b8' }}>{refAa}</span>
+          <div className="flex gap-0.5">
+            {refCodon.split('').map((nt, i) => <NtBox key={i} nt={nt} />)}
+          </div>
         </div>
         <span className="font-data text-[12px]" style={{ color: '#475569' }}>→</span>
-        <div className="flex gap-0.5">
-          {altCodon.split('').map((nt, i) => (
-            <NtBox key={i} nt={nt} changed={refCodon[i] !== altCodon[i]} />
-          ))}
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-data text-[10px] font-bold" style={{ color: effectColor }}>{altAa}</span>
+          <div className="flex gap-0.5">
+            {altCodon.split('').map((nt, i) => (
+              <NtBox key={i} nt={nt} changed={refCodon[i] !== altCodon[i]} />
+            ))}
+          </div>
         </div>
       </div>
-      <span className="font-data font-bold text-sm" style={{ color: effectColor }}>
-        {refAa} → {altAa}
-      </span>
       <span
         className="ml-auto font-data text-[10px] px-2 py-0.5 rounded-full"
         style={{ background: `${effectColor}18`, border: `1px solid ${effectColor}44`, color: effectColor }}
@@ -129,7 +144,7 @@ function FrameRow({
 
 const PIPELINE_STEPS = [
   { label: '"Silent"\nmutation',      color: '#64748b' },
-  { label: 'Novel ORF\nin alt. frame', color: '#22d3ee' },
+  { label: 'New protein\nin alt. frame', color: '#22d3ee' },
   { label: 'Peptide\nfragment',        color: '#60a5fa' },
   { label: 'MHC-I\npresentation',      color: '#c084fc' },
   { label: 'T-cell\nrecognition',      color: '#4ade80' },
@@ -170,7 +185,7 @@ const GATES = [
   {
     n: 2, color: '#22d3ee',
     label: '6-frame ORF scan',
-    body: 'A ±500 bp window around each silent variant is scanned in all 6 reading frames to find open reading frames (ATG → stop codon, minimum 50 amino acids). These are the candidate alternative proteins.',
+    body: 'A ±500 base-pair (bp) window around each silent variant is scanned in all 6 reading frames to find ORFs (AUG → stop codon, minimum 50 amino acids). These are the candidate alternative proteins.',
   },
   {
     n: 3, color: '#fb923c',
@@ -180,7 +195,7 @@ const GATES = [
   {
     n: 4, color: '#c084fc',
     label: 'MHC-I binding (IC50 / HLA)',
-    body: 'Peptide fragments (8–11 aa) centered on the mutation are scored for binding affinity to HLA alleles using MHCflurry. IC50 is the binding strength — lower is stronger. Below 500 nM = potential immune target. HLA-A*02:01 used by default (~45% of global population).',
+    body: 'Peptide fragments (8–11 amino acids) centered on the mutation are scored for binding affinity to human leukocyte antigen (HLA) alleles using MHCflurry. IC50 is the binding strength — lower is stronger. Below 500 nM = potential immune target. HLA-A*02:01 used by default (~45% of global population).',
   },
   {
     n: 5, color: '#4ade80',
@@ -192,9 +207,9 @@ const GATES = [
 const GATE_5_BODY = (
   <span>
     Three databases raise confidence:{' '}
-    <strong style={{ color: '#60a5fa' }}>OpenProt</strong> confirms the ORF has been detected as a real protein in mass spec studies.{' '}
+    <strong style={{ color: '#60a5fa' }}>OpenProt</strong> confirms the ORF has been detected as a real protein in laboratory studies.{' '}
     <strong style={{ color: '#4ade80' }}>SynMICdb</strong> checks if this exact mutation has been seen in other cancer patients — recurrence is a strong signal.{' '}
-    <strong style={{ color: '#f87171' }}>ClinVar</strong> flags germline clinical significance at the same position.
+    <strong style={{ color: '#f87171' }}>ClinVar</strong> flags known significance outside cancer at the same position.
   </span>
 );
 
@@ -277,9 +292,22 @@ export default function LandingExplainer() {
       >
         <p className="font-data text-[11px] leading-relaxed" style={{ color: '#94a3b8' }}>
           GhostFrame revisits mutations labeled &quot;Silent&quot; and checks whether they change
-          amino acids in overlapping reading frames, exposing hidden ORF effects and potential
-          neoantigen candidates.
+          amino acids in overlapping reading frames, exposing hidden open reading frame (ORF)
+          effects and potential neoantigen candidates.
         </p>
+      </div>
+
+      {/* ── Central dogma one-liner ──────────────────────────────────── */}
+      <div className="flex items-center justify-center gap-3 py-1 flex-wrap">
+        {(['DNA', 'RNA', 'Protein'] as const).map((label, i) => (
+          <div key={label} className="flex items-center gap-3">
+            <span className="font-display font-semibold text-xs px-3 py-1 rounded-full"
+              style={{ background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.2)', color: '#22d3ee' }}>
+              {label}
+            </span>
+            {i < 2 && <span className="font-data text-sm" style={{ color: '#334155' }}>→</span>}
+          </div>
+        ))}
       </div>
 
       {/* ── Codon wheel — standalone hero, outside any card ────────────── */}
@@ -294,7 +322,7 @@ export default function LandingExplainer() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/codon_wheel.png"
-            alt="Codon wheel — 64 DNA codons mapped to amino acids"
+            alt="Codon wheel — 64 RNA (mRNA) codons mapped to amino acids"
             className="rounded-xl w-[300px] h-[300px] lg:w-[480px] lg:h-[480px]"
             style={{ imageRendering: 'crisp-edges', display: 'block' }}
           />
@@ -314,16 +342,16 @@ export default function LandingExplainer() {
             DNA encodes proteins using 3-letter <strong style={{ color: '#d7f6ff' }}>codons</strong> — 64
             possible combinations that map to just 20 amino acids. The code is{' '}
             <strong style={{ color: '#d7f6ff' }}>deliberately redundant</strong>: multiple codons
-            produce the same amino acid. Read inward from the outer ring.
+            produce the same amino acid. Read outward: 1st base → 2nd → 3rd → amino acid on the rim.{' '}
+            Uses <strong style={{ color: '#d7f6ff' }}>RNA notation</strong> (U instead of T).
           </p>
           <div
             className="rounded-lg px-3 py-2.5 text-[11px] font-data leading-relaxed"
             style={{ background: 'rgba(34,211,238,0.05)', border: '1px solid rgba(34,211,238,0.15)', color: '#94a3b8' }}
           >
             <strong style={{ color: '#22d3ee' }}>Key insight:</strong>{' '}
-            Valine (V) is encoded by GTT, GTC, GTA, <em>and</em> GTG — four codons, same amino acid.
-            A single nucleotide change can be completely invisible to the protein it encodes in one
-            frame, while devastating in another.
+            Valine (V) is encoded by GUU, GUC, GUA, and GUG — four different codons, one amino acid.
+            This redundancy is what makes &ldquo;silent&rdquo; mutations possible.
           </div>
         </div>
       </div>
@@ -333,7 +361,7 @@ export default function LandingExplainer() {
 
         {/* ── Card 2: Why "silent" mutations exist ─────────────────────── */}
         <SectionCard
-          num={2}
+          num={1}
           title="A change that changes nothing… in one frame"
           accentColor="#60a5fa"
         >
@@ -346,45 +374,55 @@ export default function LandingExplainer() {
           </p>
           <div className="flex flex-col gap-2">
             <span className="font-data text-[10px]" style={{ color: '#64748b' }}>
-              Canonical frame (Frame 1):
+              Frame 1 (the main reading frame):
             </span>
             <CodonPair
-              refCodon="GTC" altCodon="GTT"
+              refCodon="GUC" altCodon="GUU"
               refAa="Val" altAa="Val"
               silent
             />
             <p className="font-data text-[10px] leading-relaxed" style={{ color: '#64748b' }}>
-              C→T at position 3. Both codons encode Valine. Standard pipelines stop here.
+              C→U at position 3. Both codons encode Valine. Standard pipelines stop here.
             </p>
           </div>
         </SectionCard>
 
         {/* ── Card 3: The blind spot ────────────────────────────────────── */}
         <SectionCard
-          num={3}
+          num={2}
           title="But the same DNA is read 6 ways"
           accentColor="#fb923c"
         >
           <p className="font-data text-[11px] leading-relaxed" style={{ color: '#94a3b8' }}>
             Your genome contains thousands of{' '}
             <strong style={{ color: '#d7f6ff' }}>overlapping genes</strong> — two proteins encoded
-            in the same DNA, starting at different positions. The same mutation can land in a
-            completely different codon in an overlapping frame and{' '}
+            in the same DNA, starting at different positions. A mutation invisible in Frame 1 can
+            land in a completely different codon in another frame and{' '}
             <strong style={{ color: '#fb923c' }}>change the amino acid</strong>.
           </p>
+          <div
+            className="rounded-lg px-3 py-2 text-[10px] font-data flex flex-col gap-1"
+            style={{ background: 'rgba(34,211,238,0.04)', border: '1px solid rgba(34,211,238,0.12)', color: '#94a3b8' }}
+          >
+            <strong style={{ color: '#22d3ee' }}>What is an ORF?</strong>{' '}
+            An <strong style={{ color: '#d7f6ff' }}>open reading frame (ORF)</strong> is any stretch of
+            codons starting with AUG (start) and ending at a stop codon — the blueprint for a protein.
+            Each of the 6 reading frames can contain its own set of ORFs.
+          </div>
           <div className="flex flex-col gap-2">
             <span className="font-data text-[10px]" style={{ color: '#64748b' }}>
               Same mutation, two frames:
             </span>
             <FrameRow
               frameNum={1} direction="Fwd"
-              refCodon="GTC" altCodon="GTT"
+              refCodon="GUC" altCodon="GUU"
               refAa="Val" altAa="Val" effect="Silent"
             />
             <FrameRow
-              frameNum={4} direction="Rev"
-              refCodon="TCT" altCodon="TTT"
-              refAa="Ser" altAa="Phe" effect="Missense"
+              frameNum={2} direction="Fwd"
+              refCodon="UCG" altCodon="UUG"
+              refAa="Ser" altAa="Leu" effect="Missense"
+              offset={1}
             />
           </div>
           <div
@@ -392,19 +430,29 @@ export default function LandingExplainer() {
             style={{ background: 'rgba(251,146,60,0.05)', border: '1px solid rgba(251,146,60,0.18)', color: '#94a3b8' }}
           >
             For decades, cancer genomics pipelines stopped at Frame 1. No standard tool
-            systematically checked the other five.
+            systematically checked the other five.{' '}
+            <a
+              href="https://doi.org/10.1038/s41588-019-0453-4"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+              style={{ color: '#fb923c' }}
+            >
+              [1]
+            </a>
           </div>
         </SectionCard>
 
         {/* ── Card 4: Why it matters for cancer ────────────────────────── */}
         <SectionCard
-          num={4}
+          num={3}
           title="Novel proteins = potential drug targets"
           accentColor="#4ade80"
         >
           <p className="font-data text-[11px] leading-relaxed" style={{ color: '#94a3b8' }}>
-            Cancer cells display fragments of their proteins on the cell surface via{' '}
-            <strong style={{ color: '#d7f6ff' }}>MHC class I</strong>.
+            Cancer cells display protein fragments on their surface via{' '}
+            <strong style={{ color: '#d7f6ff' }}>MHC class I</strong>{' '}
+            (major histocompatibility complex).
             T-cells patrol for fragments they&apos;ve never seen — if they find one, they kill the cell.
           </p>
           <div
@@ -432,7 +480,7 @@ export default function LandingExplainer() {
 
         {/* ── Card 5: The GhostFrame pipeline ──────────────────────────── */}
         <SectionCard
-          num={5}
+          num={4}
           title="The GhostFrame pipeline"
           accentColor="#c084fc"
         >
