@@ -174,6 +174,28 @@ function PipelineDiagram() {
   );
 }
 
+function CitationLink({
+  href,
+  label,
+  color,
+}: {
+  href: string;
+  label: string;
+  color: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="underline underline-offset-2"
+      style={{ color }}
+    >
+      [{label}]
+    </a>
+  );
+}
+
 // ─── Quality gates ────────────────────────────────────────────────────────────
 
 const GATES = [
@@ -195,7 +217,7 @@ const GATES = [
   {
     n: 4, color: '#c084fc',
     label: 'MHC-I binding (IC50 / HLA)',
-    body: 'Peptide fragments (8–11 amino acids) centered on the mutation are scored for binding affinity to human leukocyte antigen (HLA) alleles using MHCflurry. IC50 is the binding strength — lower is stronger. Below 500 nM = potential immune target. HLA-A*02:01 used by default (~45% of global population).',
+    body: 'Peptide fragments (8–11 amino acids) centered on the mutation are scored for binding affinity to human leukocyte antigen (HLA) alleles using MHCflurry. IC50 is the binding strength — lower is stronger. Below 500 nM = potential immune target. HLA-A*02:01 is the default run allele in this demo.',
   },
   {
     n: 5, color: '#4ade80',
@@ -209,7 +231,8 @@ const GATE_5_BODY = (
     Three databases raise confidence:{' '}
     <strong style={{ color: '#60a5fa' }}>OpenProt</strong> confirms the ORF has been detected as a real protein in laboratory studies.{' '}
     <strong style={{ color: '#4ade80' }}>SynMICdb</strong> checks if this exact mutation has been seen in other cancer patients — recurrence is a strong signal.{' '}
-    <strong style={{ color: '#f87171' }}>ClinVar</strong> flags known significance outside cancer at the same position.
+    <strong style={{ color: '#f87171' }}>ClinVar</strong> flags known significance outside cancer at the same position.{' '}
+    <CitationLink href="https://doi.org/10.1186/s13578-022-00871-x" label="1" color="#4ade80" />
   </span>
 );
 
@@ -431,15 +454,7 @@ export default function LandingExplainer() {
           >
             For decades, cancer genomics pipelines stopped at Frame 1. No standard tool
             systematically checked the other five.{' '}
-            <a
-              href="https://doi.org/10.1038/s41588-019-0453-4"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2"
-              style={{ color: '#fb923c' }}
-            >
-              [1]
-            </a>
+            <CitationLink href="https://doi.org/10.1186/s13578-022-00871-x" label="1" color="#fb923c" />
           </div>
         </SectionCard>
 
@@ -451,9 +466,11 @@ export default function LandingExplainer() {
         >
           <p className="font-data text-[11px] leading-relaxed" style={{ color: '#94a3b8' }}>
             Cancer cells display protein fragments on their surface via{' '}
-            <strong style={{ color: '#d7f6ff' }}>MHC class I</strong>{' '}
-            (major histocompatibility complex).
-            T-cells patrol for fragments they&apos;ve never seen — if they find one, they kill the cell.
+            <strong style={{ color: '#d7f6ff' }}>MHC class I</strong>.
+            T-cells patrol for fragments they&apos;ve never seen — if they find one, they kill the cell. Large
+            proteogenomic studies now show that non-canonical ORFs are translated much more often than older
+            annotations implied, including in cancer.{' '}
+            <CitationLink href="https://doi.org/10.1038/s41422-024-01059-3" label="2" color="#4ade80" />
           </p>
           <div
             className="rounded-lg px-3 py-2.5 flex flex-col gap-1.5"
@@ -468,7 +485,9 @@ export default function LandingExplainer() {
               cancer cells carry the mutation, a therapy targeting it{' '}
               <strong style={{ color: '#d7f6ff' }}>can&apos;t harm healthy tissue</strong>.
               And because the immune system has no prior tolerance to it, the T-cell response
-              tends to be strong.
+              tends to be strong. Non-canonical microproteins can also contribute substantially to
+              tumor-specific antigens in real patient cohorts.{' '}
+              <CitationLink href="https://doi.org/10.1126/sciadv.adn3628" label="3" color="#4ade80" />
             </p>
           </div>
           <PipelineDiagram />

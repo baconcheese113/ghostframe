@@ -165,13 +165,6 @@ GhostFrame uses a two-lane pipeline:
 - **Fast Lane**: MAF intake -> filter Silent variants -> fetch reference sequence -> 6-frame ORF scan -> reclassify -> summary
 - **Deep Lane**: Translate all reclassified ORFs -> generate peptides + run MHCflurry locally -> batch HMMER/OpenProt/ClinVar lookups in parallel -> candidate scoring/ranking -> report
 
-Deep lane keeps 24-hour in-memory caches for HMMER domain scans and OpenProt gene lookups, so repeat analyses against the same inputs are effectively warm-started while the API process stays alive.
-MHCflurry is run once per deep-analysis batch over the deduplicated peptide set, and the API now streams user-facing deep-analysis steps (`Peptides`, `MHC Binding`, `Domain & Evidence`, `Rank & Score`) plus per-variant enrichment events as soon as each variant is scoreable.
-`fast_complete` now carries structured count metadata (`input variants -> silent variants -> ORFs -> ORF effects -> reclassified effects`) and `running` events can include numeric progress for `Domain & Evidence`, which drives the dashboard progress bar instead of relying on parsed text.
-The dashboard navbar label is driven by streamed analysis metadata (sample barcode when uniquely available, otherwise filename or demo label), the current HLA allele is shown alongside IC50 outputs, and variants without a supported binder are rendered as explicit no-binder results instead of fake `0 nM` hits.
-The ORF-effect table remains one row per overlapping ORF effect, but now uses a denser layout with restored tier-circle evidence cues and compact SynMICdb / ClinVar columns so large analyses stay scannable.
-The reading-frame explorer keeps all six frames visible while explicitly labeling START / STOP codons and clarifying that `*` in amino-acid notation denotes a stop codon.
-Remote providers are treated as best-effort enrichment: HMMER, OpenProt, ClinVar, or SynMICdb failures emit non-fatal warnings and continue with partial evidence instead of aborting the run. ClinVar requests are throttled to NCBI's published rate guidance and retried on transient failures such as `429` and `5xx`.
 
 See [docs/architecture.md](docs/architecture.md) for details.
 
